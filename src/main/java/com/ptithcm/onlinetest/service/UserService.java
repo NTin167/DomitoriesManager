@@ -47,7 +47,7 @@ public class UserService implements IUserService{
             throw new UserAlreadyExistException("There is an account with that email address: " + signUpRequest.getEmail());
         }
         if(userRepository.existsByUsername(signUpRequest.getUserName())) {
-            throw new UserAlreadyExistException("There is an account with that email address" + signUpRequest.getUserName());
+            throw new UserAlreadyExistException("There is an account with that  username" + signUpRequest.getUserName());
         }
         User user = new User();
         user.setUsername(signUpRequest.getUserName());
