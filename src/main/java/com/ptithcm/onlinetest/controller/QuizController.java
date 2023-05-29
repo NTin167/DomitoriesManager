@@ -1,9 +1,15 @@
 package com.ptithcm.onlinetest.controller;
 
+import com.ptithcm.onlinetest.model.Comment;
 import com.ptithcm.onlinetest.model.Quiz;
+import com.ptithcm.onlinetest.model.User;
+import com.ptithcm.onlinetest.payload.dto.CommentDTO;
 import com.ptithcm.onlinetest.payload.request.QuizRequest;
 import com.ptithcm.onlinetest.payload.response.PagedResponse;
 import com.ptithcm.onlinetest.payload.response.QuizResponse;
+import com.ptithcm.onlinetest.repository.CommentRepository;
+import com.ptithcm.onlinetest.repository.QuizRepository;
+import com.ptithcm.onlinetest.repository.UserRepository;
 import com.ptithcm.onlinetest.security.CurrentUser;
 import com.ptithcm.onlinetest.security.UserPrincipal;
 import com.ptithcm.onlinetest.service.QuizQuestionService;
@@ -11,11 +17,13 @@ import com.ptithcm.onlinetest.service.QuizService;
 import com.ptithcm.onlinetest.service.TakeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/quizzes")
@@ -29,6 +37,12 @@ public class QuizController {
     @Autowired
     TakeService takeService;
 
+    @Autowired
+    QuizRepository quizRepository;
+    @Autowired
+    CommentRepository commentRepository;
+    @Autowired
+    UserRepository userRepository;
 
 
     @GetMapping("/{page}/{size}")
@@ -88,5 +102,19 @@ public class QuizController {
 //
 //        return quizService.submitQuiz(quizId, listAnswersId);
 //    }
+    @PostMapping("/comment/addComment")
+    public ResponseEntity<?> addComment(@CurrentUser UserPrincipal userPrincipal,
+                                        @RequestBody CommentDTO comment) {
+        User user = userRepository.findById(userPrincipal.getId()).get();
+        Quiz quiz = quizRepository.findById(comment.getQuiz()).get();
+        Comment comment1 = Comment.builder().user(user).quiz(quiz).text(comment.getText())
+        .build();
+        commentRepository.save(comment1);
+        return ResponseEntity.ok().body(comment1);
+    }
 
+    @GetMapping("/comment/getAllCommentByQuizId")
+    public ArrayList<Comment> getCommentByQuizId(@RequestParam(value = "quizId", required = false) Long quizId) {
+        return commentRepository.findAllByQuizId(quizId);
+    }
 }
