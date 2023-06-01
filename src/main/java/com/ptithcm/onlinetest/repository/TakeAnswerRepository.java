@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TakeAnswerRepository extends JpaRepository<TakeAnswer, Long> {
+    Iterable<TakeAnswer> findAllByTakeId(Long id);
 }

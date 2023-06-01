@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TakeRepository extends JpaRepository<Take, Long> {
-
+    Iterable<Take> findAllByUserId(Long id);
 }
