@@ -1,5 +1,6 @@
 package com.ptithcm.onlinetest.payload.dto;
 
+import com.ptithcm.onlinetest.model.QuizAnswer;
 import lombok.Data;
 
 import java.util.HashSet;
@@ -19,5 +20,5 @@ public class QuizQuestionDto {
 
     private String content;
 
-    private Set<QuizAnswerDto> quizAnswers = new HashSet<>();
+    private Set<QuizAnswer> quizAnswers = new HashSet<>();
 }
