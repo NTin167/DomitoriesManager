@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Table(name = "staffs")
@@ -21,5 +22,7 @@ public class StaffEntity {
     private String phoneNumber;
     private String email;
     private LocalDate deleteYMD;
+    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ContractEntity> contracts;
 }
 

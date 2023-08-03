@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Table(name = "students")
@@ -22,6 +24,8 @@ public class StudentEntity {
     private String phoneNumber;
     private String email;
     private LocalDate deleteYMD;
-
+    // Quan hệ 1 sinh viên có nhiều hợp đồng
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    private List<ContractEntity> contracts = new ArrayList<>();
 }
 

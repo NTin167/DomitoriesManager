@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomTypesService {
@@ -19,8 +20,23 @@ public class RoomTypesService {
         return roomTypesRepository.save(roomTypesEntity);
     }
 
-    public List<RoomTypesEntity> getAllRoomTypes() {
-        return roomTypesRepository.findAll();
+    public List<RoomTypesDTO> getAllRoomTypes() {
+        List<RoomTypesEntity> roomTypes = roomTypesRepository.findAll();
+        return roomTypes.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+    private RoomTypesDTO convertToDto(RoomTypesEntity roomType) {
+        RoomTypesDTO roomTypeDTO = new RoomTypesDTO();
+        roomTypeDTO.setId(roomType.getId());
+        roomTypeDTO.setBedNumber(roomType.getBedNumber());
+        roomTypeDTO.setImage(roomType.getImage());
+        roomTypeDTO.setPrice(roomType.getPrice());
+        roomTypeDTO.setName(roomType.getName());
+        roomTypeDTO.setRoomGender(roomType.getRoomGender());
+        roomTypeDTO.setDescription(roomType.getDescription());
+
+        return roomTypeDTO;
     }
 
     public RoomTypesEntity getRoomTypeById(Long id) {

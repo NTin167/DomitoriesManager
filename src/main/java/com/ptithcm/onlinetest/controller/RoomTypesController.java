@@ -23,8 +23,8 @@ public class RoomTypesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RoomTypesEntity>> getAllRoomTypes() {
-        List<RoomTypesEntity> roomTypesList = roomTypesService.getAllRoomTypes();
+    public ResponseEntity<List<RoomTypesDTO>> getAllRoomTypes() {
+        List<RoomTypesDTO> roomTypesList = roomTypesService.getAllRoomTypes();
         return ResponseEntity.ok(roomTypesList);
     }
 

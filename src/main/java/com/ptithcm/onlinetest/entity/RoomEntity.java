@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Table(name = "rooms")
@@ -17,5 +19,12 @@ public class RoomEntity {
     private int status;
     private int totalCapacity;
     private int availableCapacity;
-    private Long roomTypeId;
+    // Quan hệ 1 room thuộc nhiều hợp đồng
+    @OneToMany(mappedBy = "room")
+    private List<ContractEntity> contracts = new ArrayList<>();
+
+    // Quan hệ mỗi room thuộc về 1 room_types
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "roomTypeId")
+    private RoomTypesEntity roomType;
 }

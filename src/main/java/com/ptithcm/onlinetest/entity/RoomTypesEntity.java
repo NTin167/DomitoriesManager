@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Table(name = "room_types")
@@ -20,4 +22,7 @@ public class RoomTypesEntity {
     private String name;
     private String roomGender;
     private String description;
+    // Quan hệ 1 room_types có nhiều room
+    @OneToMany(mappedBy = "roomType")
+    private List<RoomEntity> rooms = new ArrayList<>();
 }
