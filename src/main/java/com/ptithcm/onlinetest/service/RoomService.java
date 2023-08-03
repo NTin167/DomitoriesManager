@@ -37,6 +37,7 @@ public class RoomService {
             existingRoom.setStatus(room.getStatus());
             existingRoom.setTotalCapacity(room.getTotalCapacity());
             existingRoom.setAvailableCapacity(room.getAvailableCapacity());
+            existingRoom.setLinkImg(room.getLinkImg());
             if(roomTypesRepository.existsById(room.getRoomType().getId())) {
                 existingRoom.setRoomType(room.getRoomType());
             }
@@ -70,6 +71,7 @@ public class RoomService {
         roomDTO.setStatus(room.getStatus());
         roomDTO.setTotalCapacity(room.getTotalCapacity());
         roomDTO.setAvailableCapacity(room.getAvailableCapacity());
+        roomDTO.setLinkImg(room.getLinkImg());
         if(room.getRoomType() != null) {
             roomDTO.setRoomTypeId(room.getRoomType().getId()); // Assuming RoomTypesEntity has getId() method
         }

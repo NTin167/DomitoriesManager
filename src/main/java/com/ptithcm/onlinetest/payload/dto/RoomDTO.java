@@ -11,4 +11,5 @@ public class RoomDTO {
     private int availableCapacity;
     private Long roomTypeId;
 
+    private String linkImg;
 }

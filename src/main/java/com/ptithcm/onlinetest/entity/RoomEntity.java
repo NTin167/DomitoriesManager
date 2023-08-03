@@ -19,6 +19,7 @@ public class RoomEntity {
     private int status;
     private int totalCapacity;
     private int availableCapacity;
+    private String linkImg;
     // Quan hệ 1 room thuộc nhiều hợp đồng
     @OneToMany(mappedBy = "room")
     private List<ContractEntity> contracts = new ArrayList<>();
