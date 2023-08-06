@@ -47,6 +47,14 @@ public class RoomService {
         }
     }
 
+    public RoomDTO getRoom(Long id) {
+        Optional<RoomEntity> optionalRoom = roomRepository.findById(id);
+        if (optionalRoom.isPresent()) {
+            return convertToDto(optionalRoom.get());
+        }
+        return null;
+    }
+
     public boolean deleteRoom(Long id) {
         RoomEntity existingRoom = getRoomById(id);
         if (existingRoom != null) {

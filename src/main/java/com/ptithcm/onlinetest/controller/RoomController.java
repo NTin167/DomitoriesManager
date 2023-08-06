@@ -33,8 +33,8 @@ public class RoomController {
 
     // API lấy thông tin một phòng theo id
     @GetMapping("/{id}")
-    public ResponseEntity<RoomEntity> getRoomById(@PathVariable Long id) {
-        RoomEntity room = roomService.getRoomById(id);
+    public ResponseEntity<RoomDTO> getRoomById(@PathVariable Long id) {
+        RoomDTO room = roomService.getRoom(id);
         if (room != null) {
             return new ResponseEntity<>(room, HttpStatus.OK);
         } else {

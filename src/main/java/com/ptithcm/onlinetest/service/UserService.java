@@ -1,7 +1,6 @@
 package com.ptithcm.onlinetest.service;
 
 import com.ptithcm.onlinetest.exception.AppException;
-import com.ptithcm.onlinetest.exception.UserAlreadyExistException;
 import com.ptithcm.onlinetest.model.*;
 import com.ptithcm.onlinetest.payload.request.SignUpRequest;
 import com.ptithcm.onlinetest.repository.PasswordResetTokenRepository;
@@ -43,12 +42,6 @@ public class UserService implements IUserService{
 
     @Override
     public User registerNewUserAccount(SignUpRequest signUpRequest) {
-        if(userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new UserAlreadyExistException("There is an account with that email address: " + signUpRequest.getEmail());
-        }
-        if(userRepository.existsByUsername(signUpRequest.getUserName())) {
-            throw new UserAlreadyExistException("There is an account with that  username" + signUpRequest.getUserName());
-        }
         User user = new User();
         user.setUsername(signUpRequest.getUserName());
         user.setFirstName(signUpRequest.getFirstName());

@@ -5,7 +5,7 @@ import com.ptithcm.onlinetest.model.VerificationToken;
 import com.ptithcm.onlinetest.payload.dto.PasswordDto;
 import com.ptithcm.onlinetest.payload.request.LoginRequest;
 import com.ptithcm.onlinetest.payload.request.SignUpRequest;
-import com.ptithcm.onlinetest.payload.response.JwtAuthenticationResponse;
+import com.ptithcm.onlinetest.payload.response.UserResponse;
 import com.ptithcm.onlinetest.registration.OnRegistrationCompleteEvent;
 import com.ptithcm.onlinetest.repository.UserRepository;
 import com.ptithcm.onlinetest.repository.VerificationTokenRepository;
@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -27,6 +28,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,6 +81,14 @@ public class RegisterController {
     public GenericResponse registerUserAccount(@Valid @RequestBody SignUpRequest signUpRequest, HttpServletRequest request) {
         System.out.println(signUpRequest.toString());
         LOGGER.debug("Registering user account with information: {}", signUpRequest);
+        if(userRepository.existsByEmail(signUpRequest.getEmail())) {
+//            throw new UserAlreadyExistException("There is an account with that email address: " + signUpRequest.getEmail());
+            return new GenericResponse("There is an account with that email address: " + signUpRequest.getEmail());
+        }
+        if(userRepository.existsByUsername(signUpRequest.getUserName())) {
+//            throw new UserAlreadyExistException("There is an account with that  username" + signUpRequest.getUserName());
+            return new GenericResponse("There is an account with that  student code: " + signUpRequest.getUserName());
+        }
         User registered = userService.registerNewUserAccount(signUpRequest);
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(getAppUrl(request), request.getLocale(), registered));
         return new GenericResponse("success");
@@ -180,16 +190,24 @@ public class RegisterController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
-                )
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsernameOrEmail(), loginRequest.getPassword()
+                    )
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.generateToken(authentication);
+            String jwt = tokenProvider.generateToken(authentication);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+            return ResponseEntity.ok(new UserResponse(jwt, userDetails.getUsername(), userDetails.getAuthorities()));
+        } catch (Exception e){
+            System.out.println(e);
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi đăng nhập");
+
     }
 
 

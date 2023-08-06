@@ -38,8 +38,8 @@ public class RoomTypesController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoomTypesEntity> updateRoomType(@PathVariable Long id, @RequestBody RoomTypesDTO roomTypesDTO) {
-        RoomTypesEntity updatedRoomType = roomTypesService.updateRoomType(id, roomTypesDTO);
+    public ResponseEntity<?> updateRoomType(@PathVariable Long id, @RequestBody RoomTypesDTO roomTypesDTO) {
+        RoomTypesDTO updatedRoomType = roomTypesService.updateRoomType(id, roomTypesDTO);
         if (updatedRoomType != null) {
             return ResponseEntity.ok(updatedRoomType);
         }

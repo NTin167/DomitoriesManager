@@ -1,11 +1,14 @@
 package com.ptithcm.onlinetest.service;
 
+import com.ptithcm.onlinetest.entity.RoomEntity;
 import com.ptithcm.onlinetest.entity.RoomTypesEntity;
+import com.ptithcm.onlinetest.payload.dto.RoomDTO;
 import com.ptithcm.onlinetest.payload.dto.RoomTypesDTO;
 import com.ptithcm.onlinetest.repository.RoomTypesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,22 @@ public class RoomTypesService {
         roomTypeDTO.setName(roomType.getName());
         roomTypeDTO.setRoomGender(roomType.getRoomGender());
         roomTypeDTO.setDescription(roomType.getDescription());
+        // Convert List<RoomEntity> to List<RoomDTO>
+        List<RoomDTO> roomDTOList = new ArrayList<>();
+
+        for (RoomEntity roomEntity : roomType.getRooms()) {
+            RoomDTO roomDTO = new RoomDTO();
+            roomDTO.setId(roomEntity.getId());
+            roomDTO.setRoomName(roomEntity.getRoomName());
+            roomDTO.setStatus(roomEntity.getStatus());
+            roomDTO.setRoomTypeId(roomEntity.getRoomType().getId());
+            roomDTO.setTotalCapacity(roomEntity.getTotalCapacity());
+            roomDTO.setLinkImg(roomEntity.getLinkImg());
+            roomDTO.setAvailableCapacity(roomEntity.getAvailableCapacity());
+            roomDTOList.add(roomDTO);
+        }
+        if ( roomDTOList.size() > 0)
+            roomTypeDTO.setRoomDTOS(roomDTOList);
 
         return roomTypeDTO;
     }
@@ -43,11 +62,12 @@ public class RoomTypesService {
         return roomTypesRepository.findById(id).orElse(null);
     }
 
-    public RoomTypesEntity updateRoomType(Long id, RoomTypesDTO roomTypesDTO) {
+    public RoomTypesDTO updateRoomType(Long id, RoomTypesDTO roomTypesDTO) {
         RoomTypesEntity roomTypesEntity = roomTypesRepository.findById(id).orElse(null);
         if (roomTypesEntity != null) {
             mapRoomTypeDTOToEntity(roomTypesDTO, roomTypesEntity);
-            return roomTypesRepository.save(roomTypesEntity);
+            roomTypesRepository.save(roomTypesEntity);
+            return roomTypesDTO;
         }
         return null;
     }

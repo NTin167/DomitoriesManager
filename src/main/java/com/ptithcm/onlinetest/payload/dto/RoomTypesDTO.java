@@ -2,6 +2,8 @@ package com.ptithcm.onlinetest.payload.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class RoomTypesDTO {
     private Long id;
@@ -12,4 +14,5 @@ public class RoomTypesDTO {
     private String name;
     private String roomGender;
     private String description;
+    private List<RoomDTO> roomDTOS;
 }

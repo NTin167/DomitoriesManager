@@ -42,20 +42,16 @@ public class StudentService {
 
     public StudentDTO updateStudent(Long id, StudentDTO studentDTO) {
         Optional<StudentEntity> studentOptional = studentRepository.findById(id);
-        if (!studentRepository.existsByStudentCode(studentDTO.getStudentCode())) {
             if (studentOptional.isPresent()) {
                 StudentEntity existingStudent = studentOptional.get();
-                existingStudent.setStudentCode(studentDTO.getStudentCode());
                 existingStudent.setGender(studentDTO.getGender());
                 existingStudent.setDob(studentDTO.getDob());
                 existingStudent.setIdentityCard(studentDTO.getIdentityCard());
                 existingStudent.setPhoneNumber(studentDTO.getPhoneNumber());
                 existingStudent.setEmail(studentDTO.getEmail());
-//            existingStudent.setDeleted(studentDTO.isDeleted());
                 StudentEntity updatedStudent = studentRepository.save(existingStudent);
                 return convertToDTO(updatedStudent);
             }
-        }
         return null;
     }
 
