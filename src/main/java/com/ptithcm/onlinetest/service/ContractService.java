@@ -6,6 +6,7 @@ import com.ptithcm.onlinetest.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -57,14 +58,32 @@ public class  ContractService {
         return contractDTO;
     }
 
-    public ContractEntity getContractById(Long id) {
-        Optional<ContractEntity> contract = contractRepository.findById(id);
-        return contract.orElse(null);
+    public List<ContractDTO> getContractById(Long id) {
+        List<ContractEntity> contract = contractRepository.findAllByStudentId(id);
+        if  ( contract.isEmpty())  {
+            return null;
+        }
+        return contract.stream().map(this::mapToContractDTO).collect(Collectors.toList());
     }
 
     public ContractDTO addContract(ContractDTO contractDTO) {
         ContractEntity contractEntity = mapToContractEntity(contractDTO);
         contractEntity = contractRepository.save(contractEntity);
+        if ( contractEntity != null) {
+            InvoiceEntity invoice = new InvoiceEntity();
+            invoice.setCreateAt(LocalDate.now());
+            invoice.setStatus(0);
+            invoice.setPrice(contractEntity.getPrice());
+            Optional<ContractEntity> contractEntity1 = contractRepository.findById(Long.valueOf(contractEntity.getId()));
+            if(contractEntity1.isPresent()) {
+                invoice.setContract(contractEntity1.get());
+            }
+            else  {
+                return null;
+            }
+            invoiceRepository.save(invoice);
+
+        }
         return mapToContractDTO(contractEntity);
     }
     private ContractEntity mapToContractEntity(ContractDTO contractDTO) {

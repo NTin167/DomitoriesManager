@@ -1,7 +1,8 @@
 package com.ptithcm.onlinetest.controller;
 
-import com.ptithcm.onlinetest.entity.ContractEntity;
 import com.ptithcm.onlinetest.payload.dto.ContractDTO;
+import com.ptithcm.onlinetest.repository.ContractRepository;
+import com.ptithcm.onlinetest.repository.InvoiceRepository;
 import com.ptithcm.onlinetest.service.ContractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,10 @@ import java.util.List;
 public class ContractController {
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+    @Autowired
+    private ContractRepository contractRepository;
 
 //    @GetMapping
 //    public ResponseEntity<List<ContractDTO>> getAllContracts() {
@@ -27,8 +32,8 @@ public class ContractController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ContractEntity> getContractById(@PathVariable Long id) {
-        ContractEntity contract = contractService.getContractById(id);
+    public ResponseEntity<?> getContractById(@PathVariable Long id) {
+        List<ContractDTO> contract = contractService.getContractById(id);
         if (contract != null) {
             return new ResponseEntity<>(contract, HttpStatus.OK);
         } else {
@@ -39,6 +44,7 @@ public class ContractController {
     @PostMapping
     public ResponseEntity<ContractDTO> createContract(@RequestBody ContractDTO contract) {
         ContractDTO createdContract = contractService.addContract(contract);
+
         return new ResponseEntity<>(createdContract, HttpStatus.CREATED);
     }
 

@@ -82,6 +82,8 @@ public class RoomService {
         roomDTO.setLinkImg(room.getLinkImg());
         if(room.getRoomType() != null) {
             roomDTO.setRoomTypeId(room.getRoomType().getId()); // Assuming RoomTypesEntity has getId() method
+            roomDTO.setDescription(room.getRoomType().getDescription());
+            roomDTO.setPrice(room.getRoomType().getPrice());
         }
 
         return roomDTO;

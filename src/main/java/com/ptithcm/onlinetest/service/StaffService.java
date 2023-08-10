@@ -1,13 +1,22 @@
 package com.ptithcm.onlinetest.service;
 
 import com.ptithcm.onlinetest.entity.StaffEntity;
+import com.ptithcm.onlinetest.exception.AppException;
+import com.ptithcm.onlinetest.model.Role;
+import com.ptithcm.onlinetest.model.RoleName;
+import com.ptithcm.onlinetest.model.User;
 import com.ptithcm.onlinetest.payload.dto.StaffDTO;
+import com.ptithcm.onlinetest.payload.request.SignUpRequest;
+import com.ptithcm.onlinetest.repository.RoleRepository;
 import com.ptithcm.onlinetest.repository.StaffRepository;
+import com.ptithcm.onlinetest.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,6 +29,13 @@ public class StaffService {
     public StaffService(StaffRepository staffRepository) {
         this.staffRepository = staffRepository;
     }
+
+    @Autowired
+    RoleRepository roleRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+    @Autowired
+    UserRepository userRepository;
 
     public List<StaffDTO> getAllStaffs() {
         List<StaffEntity> staffEntities = staffRepository.findByDeleteYMDIsNull();
@@ -82,5 +98,18 @@ public class StaffService {
         StaffEntity staffEntity = new StaffEntity();
         BeanUtils.copyProperties(staffDTO, staffEntity);
         return staffEntity;
+    }
+
+    public User registerNewUserAccount(SignUpRequest signUpRequest) {
+        User user = new User();
+        user.setUsername(signUpRequest.getUserName());
+        user.setFirstName(signUpRequest.getFirstName());
+        user.setLastName(signUpRequest.getLastName());
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        user.setEmail(signUpRequest.getEmail());
+        user.setEnabled(true);
+        Role userRole = roleRepository.findByName(RoleName.ROLE_STAFF).orElseThrow(() -> new AppException("User Role not set."));
+        user.setRoles(Collections.singleton(userRole));
+        return userRepository.save(user);
     }
 }
