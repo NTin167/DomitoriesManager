@@ -20,6 +20,7 @@ public class ContractEntity {
     private LocalDate createAt;
     private int price;
     private int status;
+    private int expiryStatus;
     private LocalDate dateStart;
     private LocalDate dateEnd;
     private int leaseDuration;

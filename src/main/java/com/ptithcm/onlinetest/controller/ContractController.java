@@ -1,5 +1,6 @@
 package com.ptithcm.onlinetest.controller;
 
+import com.ptithcm.onlinetest.entity.ContractEntity;
 import com.ptithcm.onlinetest.payload.dto.ContractDTO;
 import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.InvoiceRepository;
@@ -33,37 +34,68 @@ public class ContractController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getContractById(@PathVariable Long id) {
-        List<ContractDTO> contract = contractService.getContractById(id);
-        if (contract != null) {
-            return new ResponseEntity<>(contract, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            List<ContractDTO> contract = contractService.getContractById(id);
+            if (contract != null) {
+                return new ResponseEntity<>(contract, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Không tồn tại hợp đồng với id = " + id ,HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     @PostMapping
-    public ResponseEntity<ContractDTO> createContract(@RequestBody ContractDTO contract) {
-        ContractDTO createdContract = contractService.addContract(contract);
+    public ResponseEntity<?> createContract(@RequestBody ContractDTO contract) {
+        try {
+            ContractDTO createdContract = contractService.addContract(contract);
 
-        return new ResponseEntity<>(createdContract, HttpStatus.CREATED);
+            return new ResponseEntity<>(createdContract, HttpStatus.CREATED);
+        } catch (Exception e ) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContractDTO> updateContract(
+    public ResponseEntity<?> updateContract(
             @PathVariable Long id,
             @RequestBody ContractDTO updatedContract
     ) {
-        ContractDTO contract = contractService.updateContract(id, updatedContract);
-        if (contract != null) {
-            return new ResponseEntity<>(contract, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ContractDTO contract = contractService.updateContract(id, updatedContract);
+            if (contract != null) {
+                return new ResponseEntity<>(contract, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Không có hợp đồng với id này" ,HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage() ,HttpStatus.NOT_FOUND);
         }
+
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContract(@PathVariable Long id) {
         contractService.deleteContract(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/changeStatus/{id}")
+    public ResponseEntity<?> changeStatusContractByContractId(@PathVariable Long id, @RequestParam(value="status", required=false) int status) {
+        try {
+            ContractEntity contract = contractService.changeStatus(id, status);
+            if(contract != null) {
+                return new ResponseEntity<>("Thay đổi trạng thái của hợp đồng thành công." ,HttpStatus.NO_CONTENT);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage() ,HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Thay đổi trạng thái của hợp đồng thành công." ,HttpStatus.BAD_REQUEST);
     }
 }

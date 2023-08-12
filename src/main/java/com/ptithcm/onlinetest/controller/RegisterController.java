@@ -200,8 +200,9 @@ public class RegisterController {
 
             String jwt = tokenProvider.generateToken(authentication);
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            User currentUser = userRepository.findByUsername(userDetails.getUsername()).get();
 
-            return ResponseEntity.ok(new UserResponse(jwt, userDetails.getUsername(), userDetails.getAuthorities()));
+            return ResponseEntity.ok(new UserResponse(currentUser.getId(), jwt, userDetails.getUsername(), userDetails.getAuthorities()));
         } catch (Exception e){
             System.out.println(e);
         }

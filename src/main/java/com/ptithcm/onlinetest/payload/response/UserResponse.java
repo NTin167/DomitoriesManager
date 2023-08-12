@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 
 public class UserResponse {
+    private Long id;
     private String accessToken;
     private String tokenType = "Bearer";
     private String username;
@@ -14,7 +15,8 @@ public class UserResponse {
         this.accessToken = accessToken;
     }
 
-    public UserResponse(String accessToken, String username, Collection<? extends GrantedAuthority> roles) {
+    public UserResponse(Long id, String accessToken, String username, Collection<? extends GrantedAuthority> roles) {
+        this.id = id;
         this.accessToken = accessToken;
         this.username = username;
         this.roles = roles;
@@ -42,5 +44,21 @@ public class UserResponse {
 
     public void setRoles(Collection<? extends GrantedAuthority> roles) {
         this.roles = roles;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTokenType() {
+        return tokenType;
+    }
+
+    public void setTokenType(String tokenType) {
+        this.tokenType = tokenType;
     }
 }

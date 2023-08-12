@@ -41,14 +41,31 @@ public class  ContractService {
         contractDTO.setDateStart(contractEntity.getDateStart());
         contractDTO.setDateEnd(contractEntity.getDateEnd());
         contractDTO.setLeaseDuration(contractEntity.getLeaseDuration());
+        if(contractEntity.getDateEnd() != null) {
+            int i = contractEntity.getDateEnd().compareTo(LocalDate.now());
+            if (i <= 0) {
+                contractDTO.setExpiryStatus(1);
+                contractEntity.setExpiryStatus(1);
+                contractRepository.save(contractEntity);
+            } else {
+                contractDTO.setExpiryStatus(0);
+                contractEntity.setExpiryStatus(0);
+            }
+        }
+
+
+
         if (contractEntity.getStaff() != null) {
             contractDTO.setStaffId(contractEntity.getStaff().getId());
+            contractDTO.setStaffName(contractEntity.getStaff().getName());
         }
         if (contractEntity.getStudent() != null) {
             contractDTO.setStudentId(contractEntity.getStudent().getId());
+            contractDTO.setStudentName(contractEntity.getStudent().getName());
         }
         if (contractEntity.getRoom() != null) {
             contractDTO.setRoomId(contractEntity.getRoom().getId());
+            contractDTO.setRoomName(contractEntity.getRoom().getRoomName());
         }
         if (contractEntity.getInvoices() != null) {
             contractDTO.setInvoiceIds(contractEntity.getInvoices().stream()
@@ -69,33 +86,25 @@ public class  ContractService {
     public ContractDTO addContract(ContractDTO contractDTO) {
         ContractEntity contractEntity = mapToContractEntity(contractDTO);
         contractEntity = contractRepository.save(contractEntity);
-        if ( contractEntity != null) {
-            InvoiceEntity invoice = new InvoiceEntity();
-            invoice.setCreateAt(LocalDate.now());
-            invoice.setStatus(0);
-            invoice.setPrice(contractEntity.getPrice());
-            Optional<ContractEntity> contractEntity1 = contractRepository.findById(Long.valueOf(contractEntity.getId()));
-            if(contractEntity1.isPresent()) {
-                invoice.setContract(contractEntity1.get());
-            }
-            else  {
-                return null;
-            }
-            invoiceRepository.save(invoice);
-
-        }
         return mapToContractDTO(contractEntity);
     }
     private ContractEntity mapToContractEntity(ContractDTO contractDTO) {
         ContractEntity contractEntity = new ContractEntity();
         // Map contractDTO properties to contractEntity
         contractEntity.setContractId(contractDTO.getContractId());
-        contractEntity.setCreateAt(contractDTO.getCreateAt());
+        contractEntity.setCreateAt(LocalDate.now());
         contractEntity.setPrice(contractDTO.getPrice());
-        contractEntity.setStatus(contractDTO.getStatus());
+        contractEntity.setStatus(0); // lúc mới đăng ký trạng thái 0 là chưa duyệt
         contractEntity.setDateStart(contractDTO.getDateStart());
         contractEntity.setDateEnd(contractDTO.getDateEnd());
         contractEntity.setLeaseDuration(contractDTO.getLeaseDuration());
+        int i = contractDTO.getDateEnd().compareTo(LocalDate.now());
+        if (i <= 0) {
+            contractEntity.setExpiryStatus(1);
+        } else {
+            contractEntity.setExpiryStatus(0);
+        }
+
         // Set other related entities like staff, student, room, and invoices if necessary
     // Fetch and set the associated staff entity (if staffId is provided)
         if (contractDTO.getStaffId() != null) {
@@ -179,5 +188,34 @@ public class  ContractService {
 
         // Delete the contract
         contractRepository.delete(existingContract);
+    }
+
+    public ContractEntity changeStatus (Long id, int status) {
+        ContractEntity existingContract = contractRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Contract not found with id: " + id));
+        if (status == 1) {
+            if ( existingContract != null) {
+                InvoiceEntity invoice = new InvoiceEntity();
+                invoice.setCreateAt(LocalDate.now());
+                invoice.setStatus(0);
+                invoice.setPrice(existingContract.getPrice());
+                Optional<ContractEntity> contractEntity1 = contractRepository.findById(existingContract.getId());
+                if(contractEntity1.isPresent()) {
+                    invoice.setContract(contractEntity1.get());
+                }
+                else  {
+                    return null;
+                }
+                invoiceRepository.save(invoice);
+
+            }
+
+            RoomEntity room = roomRepository.findById(existingContract.getRoom().getId()).get();
+            room.setAvailableCapacity(room.getAvailableCapacity() - 1 );
+            roomRepository.save(room);
+        }
+        existingContract.setStatus(status);
+        contractRepository.save(existingContract);
+        return existingContract;
     }
 }

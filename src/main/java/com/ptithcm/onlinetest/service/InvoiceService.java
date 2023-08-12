@@ -2,14 +2,20 @@ package com.ptithcm.onlinetest.service;
 
 import com.ptithcm.onlinetest.entity.ContractEntity;
 import com.ptithcm.onlinetest.entity.InvoiceEntity;
+import com.ptithcm.onlinetest.entity.RoomEntity;
 import com.ptithcm.onlinetest.payload.dto.ContractDTO;
 import com.ptithcm.onlinetest.payload.dto.InvoiceDTO;
+import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.InvoiceRepository;
+import com.ptithcm.onlinetest.repository.RoomRepository;
+import com.ptithcm.onlinetest.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class InvoiceService {
@@ -17,14 +23,26 @@ public class InvoiceService {
     @Autowired
     private InvoiceRepository invoiceRepository;
 
-    public InvoiceDTO getInvoiceById(Long id) {
-        Optional<InvoiceEntity> invoiceOptional = invoiceRepository.findById(id);
-        if (invoiceOptional.isPresent()) {
-            InvoiceEntity invoiceEntity = invoiceOptional.get();
-            return convertToDTO(invoiceEntity);
-        } else {
-            return null;
-        }
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private ContractRepository contractRepository;
+
+    @Autowired
+    private RoomRepository roomRepository;
+    public List<InvoiceDTO> getAllInvoicesByStudentId(Long studentId) {
+        List<InvoiceEntity> invoiceEntities = invoiceRepository.findAllByContract_Student_Id(studentId);
+        return invoiceEntities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<InvoiceDTO> getAllInvoices() {
+        List<InvoiceEntity> invoiceEntities = invoiceRepository.findAll();
+        return invoiceEntities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public InvoiceDTO createInvoice(InvoiceDTO invoiceDTO) {
@@ -128,6 +146,38 @@ public class InvoiceService {
     }
 
 
+    public int paymentByInvoiceId(Long id) {
+        Optional<InvoiceEntity> invoice =  invoiceRepository.findById(id);
+        if (invoice.isPresent()) {
+           if(invoice.get().getStatus() == 1) {
+               return 0; // hóa đơn đã thanh toán
+           } else {
+               if (invoice.get().getContract().getRoom().getAvailableCapacity() > 0) {
+                   invoice.get().setStatus(1);
+                   Optional<ContractEntity> contract = contractRepository.findById(invoice.get().getContract().getId());
+                   if(contract.isPresent()) {
+                       contract.get().setStatus(3); // set trạng thái hợp đồng đã hoàn thành
+                        Optional<RoomEntity> room = roomRepository.findById(invoice.get().getContract().getRoom().getId());
+                        if (room.isPresent()) {
+                            room.get().setAvailableCapacity(room.get().getAvailableCapacity() -  1);
+                            invoiceRepository.save(invoice.get());
+                            contractRepository.save(contract.get());
+                            roomRepository.save(room.get());
+                            return 1; // thành công
+                        } else  {
+                            return 2; // phòng không tồn tại
+                        }
 
+                   }
+                   else  {
+                       return 3; // hợp đồng không tồn tại
+                   }
 
+               } else {
+                   return 4; // phòng đã hết chỗ không thể duyệt
+               }
+           }
+        }
+        return 5; // hóa đơn không tồn tại
+    }
 }

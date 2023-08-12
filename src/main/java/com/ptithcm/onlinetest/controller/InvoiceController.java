@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/invoices")
 public class InvoiceController {
@@ -15,14 +17,19 @@ public class InvoiceController {
     private InvoiceService invoiceService;
 
     // GET /invoices/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<InvoiceDTO> getInvoiceById(@PathVariable Long id) {
-        InvoiceDTO invoiceDTO = invoiceService.getInvoiceById(id);
+    @GetMapping("/getInvoiceByStudentID/{id}")
+    public ResponseEntity<?> getInvoiceByStudentId(@PathVariable Long id) {
+        List<InvoiceDTO> invoiceDTO = invoiceService.getAllInvoicesByStudentId(id);
         if (invoiceDTO != null) {
             return ResponseEntity.ok(invoiceDTO);
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping()
+    public List<InvoiceDTO> getAllInvoices() {
+        return invoiceService.getAllInvoices();
     }
 
     // POST /invoices
@@ -53,4 +60,25 @@ public class InvoiceController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PutMapping("/payment/{id}")
+    public ResponseEntity<?> paymentByInvoiceId(@PathVariable Long id) {
+        int i = invoiceService.paymentByInvoiceId(id);
+        switch (i) {
+            case 0:
+                return new ResponseEntity<>("Thanh toán thấy bại vì hóa đơn này đã được thanh toán! ", HttpStatus.ACCEPTED);
+            case 1:
+                return new ResponseEntity<>("Thanh toán hóa đơn thành công", HttpStatus.OK);
+            case 2:
+                return new ResponseEntity<>("Phòng của hợp đồng không tồn tại", HttpStatus.BAD_REQUEST);
+            case 3:
+                return new ResponseEntity<>("Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST);
+            case 4:
+                return new ResponseEntity<>("Phòng đăng ký đã hết chỗ", HttpStatus.BAD_REQUEST);
+            case 5:
+                return new ResponseEntity<>("Hóa đơn không tồn tại", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Thanh toán thất bại, lỗi không xác định", HttpStatus.BAD_REQUEST);
+    }
+
 }

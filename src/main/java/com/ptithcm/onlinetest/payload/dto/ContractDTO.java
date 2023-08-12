@@ -17,7 +17,11 @@ public class ContractDTO {
     private int leaseDuration;
     private LocalDate dateEnd;
     private Long staffId;
+    private String staffName;
     private Long studentId;
+    private String studentName;
     private Long roomId;
+    private String roomName;
     private List<Long> invoiceIds;
+    private int expiryStatus;
 }
