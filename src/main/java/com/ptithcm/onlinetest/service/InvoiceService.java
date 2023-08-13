@@ -119,6 +119,8 @@ public class InvoiceService {
         contractDTO.setDateStart(contractEntity.getDateStart());
         contractDTO.setDateEnd(contractEntity.getDateEnd());
         contractDTO.setLeaseDuration(contractEntity.getLeaseDuration());
+        contractDTO.setStudentName(contractEntity.getStudent().getName());
+        contractDTO.setStudentId(contractEntity.getStudent().getId());
 
         // You need to decide how to handle the StaffEntity, StudentEntity, and RoomEntity relationships here
 

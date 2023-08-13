@@ -190,7 +190,7 @@ public class  ContractService {
         contractRepository.delete(existingContract);
     }
 
-    public ContractEntity changeStatus (Long id, int status) {
+    public ContractEntity changeStatus (Long id, int status, Long staffId) {
         ContractEntity existingContract = contractRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Contract not found with id: " + id));
         if (status == 1) {
@@ -201,13 +201,19 @@ public class  ContractService {
                 invoice.setPrice(existingContract.getPrice());
                 Optional<ContractEntity> contractEntity1 = contractRepository.findById(existingContract.getId());
                 if(contractEntity1.isPresent()) {
+
+                    Optional<StaffEntity> staff = staffRepository.findById(staffId);
+                    if (staff.isPresent()) {
+                        contractEntity1.get().setStaff(staff.get());
+                        contractRepository.save(contractEntity1.get());
+                    }
+
                     invoice.setContract(contractEntity1.get());
+                    invoiceRepository.save(invoice);
                 }
                 else  {
                     return null;
                 }
-                invoiceRepository.save(invoice);
-
             }
 
             RoomEntity room = roomRepository.findById(existingContract.getRoom().getId()).get();

@@ -85,9 +85,11 @@ public class ContractController {
     }
 
     @PostMapping("/changeStatus/{id}")
-    public ResponseEntity<?> changeStatusContractByContractId(@PathVariable Long id, @RequestParam(value="status", required=false) int status) {
+    public ResponseEntity<?> changeStatusContractByContractId(@PathVariable Long id,
+                                                              @RequestParam(value="status", required=false) int status,
+                                                              @RequestParam(value = "staffId", required = false) Long staffId) {
         try {
-            ContractEntity contract = contractService.changeStatus(id, status);
+            ContractEntity contract = contractService.changeStatus(id, status, staffId);
             if(contract != null) {
                 return new ResponseEntity<>("Thay đổi trạng thái của hợp đồng thành công." ,HttpStatus.NO_CONTENT);
             }

@@ -28,4 +28,8 @@ public class RoomEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "roomTypeId")
     private RoomTypesEntity roomType;
+
+    // Quan hệ 1 room có nhiều ElectricBillEntity
+    @OneToMany(mappedBy = "room")
+    private List<ElectricBillEntity> electricBills = new ArrayList<>();
 }
