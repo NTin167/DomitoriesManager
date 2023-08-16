@@ -1,9 +1,12 @@
 package com.ptithcm.onlinetest.controller;
 
 import com.ptithcm.onlinetest.entity.ContractEntity;
+import com.ptithcm.onlinetest.entity.RoomEntity;
 import com.ptithcm.onlinetest.payload.dto.ContractDTO;
+import com.ptithcm.onlinetest.payload.dto.RoomDTO;
 import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.InvoiceRepository;
+import com.ptithcm.onlinetest.repository.RoomRepository;
 import com.ptithcm.onlinetest.service.ContractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/contracts")
@@ -22,6 +26,8 @@ public class ContractController {
     @Autowired
     private ContractRepository contractRepository;
 
+    @Autowired
+    private RoomRepository roomRepository;
 //    @GetMapping
 //    public ResponseEntity<List<ContractDTO>> getAllContracts() {
 //        List<ContractDTO> contracts = contractService.getAllContracts();
@@ -99,5 +105,22 @@ public class ContractController {
             return new ResponseEntity<>(e.getMessage() ,HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Thay đổi trạng thái của hợp đồng thành công." ,HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/getInfoRoom/{contractId}")
+    public ResponseEntity<?> getInfoRoom(@PathVariable Long contractId) {
+        RoomDTO roomDTO = new RoomDTO();
+        Optional<RoomEntity> room = roomRepository.findById(contractId);
+        if (room.isPresent()) {
+            roomDTO.setId(room.get().getId());
+            roomDTO.setRoomName(room.get().getRoomName());
+            roomDTO.setRoomTypeName(room.get().getRoomType().getName());
+            roomDTO.setAvailableCapacity(room.get().getAvailableCapacity());
+            roomDTO.setTotalCapacity(room.get().getTotalCapacity());
+            roomDTO.setDescription(room.get().getRoomType().getDescription());
+
+            return new ResponseEntity<>(roomDTO, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Khong co phong", HttpStatus.BAD_REQUEST);
     }
 }

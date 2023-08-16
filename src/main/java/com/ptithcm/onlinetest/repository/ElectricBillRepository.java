@@ -18,4 +18,6 @@ public interface ElectricBillRepository extends JpaRepository<ElectricBillEntity
     boolean existsByCreateAtBetween(LocalDateTime from, LocalDateTime to);
 
     List<ElectricBillEntity> findAllByRoomId(Long roomId);
+
+
 }

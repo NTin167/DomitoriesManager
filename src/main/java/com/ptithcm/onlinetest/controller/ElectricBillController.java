@@ -81,8 +81,14 @@ public class ElectricBillController {
         return ResponseEntity.ok(electricBills);
     }
 
-    // Read an electric bill by ID
     @GetMapping("/{id}")
+    public ResponseEntity<List<ElectricBillDTO>> getAllElectricBillsByStudentId(@PathVariable Long id) {
+        List<ElectricBillDTO> electricBills = electricBillService.getAllElectricBillsByStudentId(id);
+        return ResponseEntity.ok(electricBills);
+    }
+
+    // Read an electric bill by ID
+    @GetMapping("/student/{id}")
     public ResponseEntity<ElectricBillDTO> getElectricBillById(@PathVariable Long id) {
         ElectricBillDTO electricBill = electricBillService.getElectricBillById(id);
         return ResponseEntity.ok(electricBill);

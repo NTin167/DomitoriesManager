@@ -10,6 +10,7 @@ public class RoomDTO {
     private int totalCapacity;
     private int availableCapacity;
     private Long roomTypeId;
+    private String roomTypeName;
     private int price;
     private String description;
 

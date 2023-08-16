@@ -1,8 +1,12 @@
 package com.ptithcm.onlinetest.service;
 
+import com.ptithcm.onlinetest.entity.ContractEntity;
 import com.ptithcm.onlinetest.entity.ElectricBillEntity;
+import com.ptithcm.onlinetest.entity.StudentEntity;
 import com.ptithcm.onlinetest.payload.dto.ElectricBillDTO;
+import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.ElectricBillRepository;
+import com.ptithcm.onlinetest.repository.StudentRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,11 @@ public class ElectricBillService {
 
     private final ElectricBillRepository electricBillRepository;
     private final ModelMapper modelMapper;
+
+    @Autowired
+    StudentRepository studentRepository;
+    @Autowired
+    ContractRepository contractRepository;
 
     @Autowired
     public ElectricBillService(ElectricBillRepository electricBillRepository, ModelMapper modelMapper) {
@@ -37,6 +46,21 @@ public class ElectricBillService {
         return electricBillEntities.stream()
                 .map(electricBillEntity -> modelMapper.map(electricBillEntity, ElectricBillDTO.class))
                 .collect(Collectors.toList());
+    }
+    public List<ElectricBillDTO> getAllElectricBillsByStudentId(Long studentId) {
+        Optional<StudentEntity> student = studentRepository.findById(studentId);
+        if(student.isPresent()) {
+            for (ContractEntity contract : student.get().getContracts()) {
+                if(contract.getExpiryStatus() == 0) {
+                    List<ElectricBillEntity> electricBillEntities = electricBillRepository.findAllByRoomId(contract.getRoom().getId());
+                    return electricBillEntities.stream()
+                            .map(electricBillEntity -> modelMapper.map(electricBillEntity, ElectricBillDTO.class))
+                            .collect(Collectors.toList());
+
+                }
+            }
+        }
+        return null;
     }
 
     public ElectricBillDTO getElectricBillById(Long id) {

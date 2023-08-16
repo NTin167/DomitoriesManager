@@ -59,6 +59,7 @@ public class StudentService {
     private StudentDTO convertToDTO(StudentEntity student) {
         return new StudentDTO(
                 student.getId(),
+                student.getName(),
                 student.getStudentCode(),
                 student.getGender(),
                 student.getDob(),
@@ -72,6 +73,7 @@ public class StudentService {
     private StudentEntity convertToEntity(StudentDTO studentDTO) {
         StudentEntity student = new StudentEntity();
         student.setStudentCode(studentDTO.getStudentCode());
+        student.setName(studentDTO.getName());
         student.setGender(studentDTO.getGender());
         student.setDob(studentDTO.getDob());
         student.setIdentityCard(studentDTO.getIdentityCard());

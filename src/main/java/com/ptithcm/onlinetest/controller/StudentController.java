@@ -1,6 +1,9 @@
 package com.ptithcm.onlinetest.controller;
 
 import com.ptithcm.onlinetest.payload.dto.StudentDTO;
+import com.ptithcm.onlinetest.repository.ContractRepository;
+import com.ptithcm.onlinetest.repository.RoomRepository;
+import com.ptithcm.onlinetest.repository.StudentRepository;
 import com.ptithcm.onlinetest.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,12 @@ public class StudentController {
         this.studentService = studentService;
     }
 
+    @Autowired
+    ContractRepository contractRepository;
+    @Autowired
+    RoomRepository roomRepository;
+    @Autowired
+    StudentRepository studentRepository;
     @GetMapping
     public ResponseEntity<List<StudentDTO>> getAllStudents() {
         List<StudentDTO> students = studentService.getAllStudents();
