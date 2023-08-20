@@ -22,8 +22,11 @@ public class RoomService {
     @Autowired
     private RoomTypesRepository roomTypesRepository;
     public GenericResponse createRoom(RoomEntity room) {
+
         if (room.getTotalCapacity() < 1) {
             return new GenericResponse("Số giường của phòng phải lớn hơn 1");
+        } else if (!roomRepository.findAllByRoomName(room.getRoomName()).isEmpty()) {
+            return new GenericResponse("Tên phòng đã tồn tại. Không thể thêm phòng");
         } else  {
             Optional<RoomTypesEntity> roomTypesEntity = roomTypesRepository.findById(room.getRoomType().getId());
             if (roomTypesEntity.isPresent()) {

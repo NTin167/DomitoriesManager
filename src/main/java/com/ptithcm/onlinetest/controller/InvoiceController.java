@@ -2,6 +2,7 @@ package com.ptithcm.onlinetest.controller;
 
 import com.ptithcm.onlinetest.payload.dto.InvoiceDTO;
 import com.ptithcm.onlinetest.service.InvoiceService;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,23 +63,23 @@ public class InvoiceController {
     }
 
     @PutMapping("/payment/{id}")
-    public ResponseEntity<?> paymentByInvoiceId(@PathVariable Long id) {
+    public GenericResponse paymentByInvoiceId(@PathVariable Long id) {
         int i = invoiceService.paymentByInvoiceId(id);
         switch (i) {
             case 0:
-                return new ResponseEntity<>("Thanh toán thấy bại vì hóa đơn này đã được thanh toán! ", HttpStatus.ACCEPTED);
+                return new GenericResponse("Thanh toán thất bại vì hóa đơn này đã được thanh toán! ");
             case 1:
-                return new ResponseEntity<>("Thanh toán hóa đơn thành công", HttpStatus.OK);
+                return new GenericResponse("Thanh toán hóa đơn thành công");
             case 2:
-                return new ResponseEntity<>("Phòng của hợp đồng không tồn tại", HttpStatus.BAD_REQUEST);
+                return new GenericResponse("Phòng của hợp đồng không tồn tại");
             case 3:
-                return new ResponseEntity<>("Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST);
+                return new GenericResponse("Hợp đồng không tồn tại");
             case 4:
-                return new ResponseEntity<>("Phòng đăng ký đã hết chỗ", HttpStatus.BAD_REQUEST);
+                return new GenericResponse("Phòng đăng ký đã hết chỗ");
             case 5:
-                return new ResponseEntity<>("Hóa đơn không tồn tại", HttpStatus.BAD_REQUEST);
+                return new GenericResponse("Hóa đơn không tồn tại");
         }
-        return new ResponseEntity<>("Thanh toán thất bại, lỗi không xác định", HttpStatus.BAD_REQUEST);
+        return new GenericResponse("Thanh toán thất bại, lỗi không xác định");
     }
 
 }

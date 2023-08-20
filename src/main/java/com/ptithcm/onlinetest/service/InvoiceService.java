@@ -81,6 +81,10 @@ public class InvoiceService {
         invoiceDTO.setPrice(invoiceEntity.getPrice());
         invoiceDTO.setStatus(invoiceEntity.getStatus());
         invoiceDTO.setContract(convertToContractDTO(invoiceEntity.getContract()));
+        invoiceDTO.getContract().setStaffId(invoiceEntity.getContract().getStaff().getId());
+        invoiceDTO.getContract().setStaffName(invoiceEntity.getContract().getStaff().getName());
+        invoiceDTO.getContract().setRoomId(invoiceEntity.getContract().getRoom().getId());
+        invoiceDTO.getContract().setRoomName(invoiceEntity.getContract().getRoom().getRoomName());
         return invoiceDTO;
     }
 

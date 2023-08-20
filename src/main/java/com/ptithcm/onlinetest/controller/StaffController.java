@@ -79,10 +79,10 @@ public class StaffController {
         System.out.println(signUpRequest.toString());
         if(userRepository.existsByUsername(signUpRequest.getUserName())) {
 //            throw new UserAlreadyExistException("There is an account with that  username" + signUpRequest.getUserName());
-            return new GenericResponse("There is an account with that  student code: " + signUpRequest.getUserName());
+            return new GenericResponse("Nhân viên " + signUpRequest.getUserName() + " đã có tài khoản");
         }
         if(!staffRepository.existsByStaffCode(signUpRequest.getUserName())) {
-            return new GenericResponse("Staff code is null: " + signUpRequest.getUserName());
+            return new GenericResponse("Mã nhân viên không tồn tại: " + signUpRequest.getUserName())  ;
         }
         User registered = staffService.registerNewUserAccount(signUpRequest);
         return new GenericResponse("success");

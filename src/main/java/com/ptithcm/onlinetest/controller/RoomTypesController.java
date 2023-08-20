@@ -48,7 +48,10 @@ public class RoomTypesController {
             return new GenericResponse("Sửa loại phòng thành công");
         } else if (result == 1) {
             return new GenericResponse("Loại phòng không tồn tại");
-        } else {
+        } else if (result == 2) {
+            return new GenericResponse("Loại phòng đã có phòng. Không thể sửa");
+        }
+        else {
             return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý");
         }
     }

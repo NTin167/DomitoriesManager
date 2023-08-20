@@ -67,9 +67,14 @@ public class RoomTypesService {
     public int updateRoomType(Long id, RoomTypesDTO roomTypesDTO) {
         Optional<RoomTypesEntity> roomTypesEntity = roomTypesRepository.findById(id);
         if (roomTypesEntity.isPresent()) {
-            mapRoomTypeDTOToEntity(roomTypesDTO, roomTypesEntity.get());
-            roomTypesRepository.save(roomTypesEntity.get());
-            return 0;
+            if (roomTypesEntity.get().getRooms().isEmpty()) {
+                mapRoomTypeDTOToEntity(roomTypesDTO, roomTypesEntity.get());
+                roomTypesRepository.save(roomTypesEntity.get());
+                return 0;
+            } else {
+                return 2;
+            }
+
         }
         return 1;
     }
