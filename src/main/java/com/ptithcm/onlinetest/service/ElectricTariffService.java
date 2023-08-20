@@ -20,8 +20,15 @@ public class ElectricTariffService {
         return electricTariffRepository.findById(id).orElse(null);
     }
 
-    public ElectricTariffEntity createElectricTariff(ElectricTariffEntity electricTariff) {
-        return electricTariffRepository.save(electricTariff);
+    public int createElectricTariff(ElectricTariffEntity electricTariff) {
+        List <ElectricTariffEntity> electricTariffEntities = electricTariffRepository.findAll();
+        for (ElectricTariffEntity e : electricTariffEntities) {
+            if (e.getYear() == electricTariff.getYear() && e.getMonth() == electricTariff.getMonth()) {
+                return 1;
+            }
+        }
+        electricTariffRepository.save(electricTariff);
+        return 0;
     }
 
     public ElectricTariffEntity updateElectricTariff(Long id, ElectricTariffEntity updatedElectricTariff) {

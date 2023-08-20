@@ -1,5 +1,7 @@
 package com.ptithcm.onlinetest.controller;
 
+import com.ptithcm.onlinetest.entity.StaffEntity;
+import com.ptithcm.onlinetest.entity.StudentEntity;
 import com.ptithcm.onlinetest.model.User;
 import com.ptithcm.onlinetest.model.VerificationToken;
 import com.ptithcm.onlinetest.payload.dto.PasswordDto;
@@ -7,6 +9,8 @@ import com.ptithcm.onlinetest.payload.request.LoginRequest;
 import com.ptithcm.onlinetest.payload.request.SignUpRequest;
 import com.ptithcm.onlinetest.payload.response.UserResponse;
 import com.ptithcm.onlinetest.registration.OnRegistrationCompleteEvent;
+import com.ptithcm.onlinetest.repository.StaffRepository;
+import com.ptithcm.onlinetest.repository.StudentRepository;
 import com.ptithcm.onlinetest.repository.UserRepository;
 import com.ptithcm.onlinetest.repository.VerificationTokenRepository;
 import com.ptithcm.onlinetest.security.JwtTokenProvider;
@@ -27,6 +31,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -77,6 +82,12 @@ public class RegisterController {
     @Autowired
     UserSecurityService userSecurityService;
 
+    @Autowired
+    StudentRepository studentRepository;
+
+    @Autowired
+    StaffRepository staffRepository;
+
     @PostMapping("/registration")
     public GenericResponse registerUserAccount(@Valid @RequestBody SignUpRequest signUpRequest, HttpServletRequest request) {
         System.out.println(signUpRequest.toString());
@@ -89,9 +100,15 @@ public class RegisterController {
 //            throw new UserAlreadyExistException("There is an account with that  username" + signUpRequest.getUserName());
             return new GenericResponse("There is an account with that  student code: " + signUpRequest.getUserName());
         }
-        User registered = userService.registerNewUserAccount(signUpRequest);
-        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(getAppUrl(request), request.getLocale(), registered));
-        return new GenericResponse("success");
+        Optional<StudentEntity> student = studentRepository.findByStudentCode(signUpRequest.getUserName());
+        if (student.isPresent()) {
+            User registered = userService.registerNewUserAccount(signUpRequest);
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(getAppUrl(request), null, registered));
+            return new GenericResponse("success");
+        } else {
+            return new GenericResponse("Mã số sinh viên không tồn tại");
+        }
+
     }
 
     @GetMapping("/resendRegistrationToken")
@@ -200,9 +217,26 @@ public class RegisterController {
 
             String jwt = tokenProvider.generateToken(authentication);
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            User currentUser = userRepository.findByUsername(userDetails.getUsername()).get();
+            Long id = null;
 
-            return ResponseEntity.ok(new UserResponse(currentUser.getId(), jwt, userDetails.getUsername(), userDetails.getAuthorities()));
+            for (GrantedAuthority authority : userDetails.getAuthorities()) {
+                if (authority.getAuthority().equals("ROLE_USER")) {
+                    StudentEntity student = studentRepository.findByStudentCode(userDetails.getUsername()).get();
+                    id = student.getId();
+                    break; // Nếu tìm thấy quyền "ROLE_USER", thoát khỏi vòng lặp
+                }
+                if (authority.getAuthority().equals("ROLE_STAFF")) {
+                    StaffEntity staff = staffRepository.findByStaffCode(userDetails.getUsername()).get();
+                    id = staff.getId();
+                    break; // Nếu tìm thấy quyền "ROLE_STAFF", thoát khỏi vòng lặp
+                }
+                if (authority.getAuthority().equals("ROLE_ADMIN")) {
+                    id = userRepository.findByUsername(userDetails.getUsername()).get().getId();
+                    break; // Nếu tìm thấy quyền "ROLE_ADMIN", thoát khỏi vòng lặp
+                }
+            }
+
+            return ResponseEntity.ok(new UserResponse(id, jwt, userDetails.getUsername(), userDetails.getAuthorities()));
         } catch (Exception e){
             System.out.println(e);
         }
@@ -214,8 +248,11 @@ public class RegisterController {
 
 //    ---------------------------------------------------------------------
 //    NON API
+//    private String getAppUrl(HttpServletRequest request) {
+//        return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+//    }
     private String getAppUrl(HttpServletRequest request) {
-        return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+        return "http://localhost:3000/xacthuc?token=";
     }
 
     private SimpleMailMessage constructEmail(String subject, String body, User user) {
@@ -227,7 +264,7 @@ public class RegisterController {
         return email;
     }
     private SimpleMailMessage constructResendVerificationTokenEmail(final String contextPath, final Locale locale, final VerificationToken newToken, final User user) {
-        final String confirmationUrl = contextPath + "/registrationConfirm.html?token=" + newToken.getToken();
+        final String confirmationUrl = "http://localhost:3000/xacthuc?token="  + newToken.getToken();
         final String message = messages.getMessage("message.resendToken", null, locale);
         return constructEmail("Resend Registration Token", message + " \r\n" + confirmationUrl, user);
     }

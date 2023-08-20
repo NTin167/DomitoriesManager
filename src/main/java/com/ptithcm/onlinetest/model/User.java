@@ -62,15 +62,6 @@ public class User extends DateAudit {
 
         private Instant lastLogin;
 
-        @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-//        @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-        @JsonIgnore
-        private Set<Quiz> quizzes = new HashSet<>();
-
-        @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-//        @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-        @JsonIgnore
-        private Set<Category> categories = new HashSet<>();
 
         @ManyToMany(fetch = FetchType.LAZY)
         @JsonIgnore
@@ -157,22 +148,6 @@ public class User extends DateAudit {
 
         public void setLastLogin(Instant lastLogin) {
                 this.lastLogin = lastLogin;
-        }
-
-        public Set<Quiz> getQuizzes() {
-                return quizzes;
-        }
-
-        public void setQuizzes(Set<Quiz> quizzes) {
-                this.quizzes = quizzes;
-        }
-
-        public Set<Category> getCategories() {
-                return categories;
-        }
-
-        public void setCategories(Set<Category> categories) {
-                this.categories = categories;
         }
 
         public Set<Role> getRoles() {

@@ -1,6 +1,5 @@
 package com.ptithcm.onlinetest.controller;
 
-import com.ptithcm.onlinetest.entity.ContractEntity;
 import com.ptithcm.onlinetest.entity.RoomEntity;
 import com.ptithcm.onlinetest.payload.dto.ContractDTO;
 import com.ptithcm.onlinetest.payload.dto.RoomDTO;
@@ -8,6 +7,7 @@ import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.InvoiceRepository;
 import com.ptithcm.onlinetest.repository.RoomRepository;
 import com.ptithcm.onlinetest.service.ContractService;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,15 +54,21 @@ public class ContractController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createContract(@RequestBody ContractDTO contract) {
+    public GenericResponse createContract(@RequestBody ContractDTO contract) {
         try {
-            ContractDTO createdContract = contractService.addContract(contract);
-
-            return new ResponseEntity<>(createdContract, HttpStatus.CREATED);
+            int i  = contractService.addContract(contract);
+            if ( i == 0 ) {
+                return new GenericResponse("Đăng ký phòng thành công");
+            } else if ( i == 1 ) {
+                return new GenericResponse("Phòng đã hết chỗ");
+            } else if ( i == 2) {
+                return new GenericResponse("Phòng không tồn tại");
+            }
         } catch (Exception e ) {
             e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return new GenericResponse("Đăng ký phòng thất bại");
         }
+        return null;
     }
 
     @PutMapping("/{id}")
@@ -91,20 +97,26 @@ public class ContractController {
     }
 
     @PostMapping("/changeStatus/{id}")
-    public ResponseEntity<?> changeStatusContractByContractId(@PathVariable Long id,
+    public GenericResponse changeStatusContractByContractId(@PathVariable Long id,
                                                               @RequestParam(value="status", required=false) int status,
                                                               @RequestParam(value = "staffId", required = false) Long staffId) {
         try {
-            ContractEntity contract = contractService.changeStatus(id, status, staffId);
-            if(contract != null) {
-                return new ResponseEntity<>("Thay đổi trạng thái của hợp đồng thành công." ,HttpStatus.NO_CONTENT);
+            int result = contractService.changeStatus(id, status, staffId);
+            if(result == 0) {
+                return new GenericResponse("Thay đổi trạng thái của hợp đồng thành công.");
+            } else if (result == 1) {
+                return new GenericResponse("Trạng thái của hợp đồng không thể thay đổi.");
+            } else if (result == 2) {
+                return new GenericResponse("Hợp đồng không tồn tại.");
+            }
+            else {
+                return new GenericResponse("Thay đổi trạng thái của hợp đồng thất bại.");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage() ,HttpStatus.BAD_REQUEST);
+            return new GenericResponse(e.getMessage());
         }
-        return new ResponseEntity<>("Thay đổi trạng thái của hợp đồng thành công." ,HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/getInfoRoom/{contractId}")

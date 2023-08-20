@@ -7,8 +7,8 @@ import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "quiz_question")
+//@Entity
+//@Table(name = "quiz_question")
 //@Data
 @AllArgsConstructor
 @NoArgsConstructor

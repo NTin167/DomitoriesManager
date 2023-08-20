@@ -4,6 +4,7 @@ import com.ptithcm.onlinetest.entity.ElectricBillEntity;
 import com.ptithcm.onlinetest.payload.dto.ElectricBillDTO;
 import com.ptithcm.onlinetest.repository.ElectricBillRepository;
 import com.ptithcm.onlinetest.service.ElectricBillService;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +29,11 @@ public class ElectricBillController {
 
     // Create a new electric bill
     @PostMapping
-    public ResponseEntity<?> createElectricBill(@RequestBody ElectricBillDTO electricBillDTO) {
+    public GenericResponse createElectricBill(@RequestBody ElectricBillDTO electricBillDTO) {
         try {
             List<ElectricBillEntity> electricBillEntities = electricBillRepository.findAllByRoomId(electricBillDTO.getRoom().getId());
 
-            if (electricBillEntities.isEmpty()) { // chưa có hóa đơn nào
-                ElectricBillDTO createdElectricBill = electricBillService.createElectricBill(electricBillDTO);
-                return ResponseEntity.ok(createdElectricBill);
-            } else  {
+            if (!electricBillEntities.isEmpty()) { // nếu đã có hóa đơn
                 for (ElectricBillEntity electricBillEntity : electricBillEntities) {
                     if(electricBillEntity != null) {
                         int year = electricBillEntity.getCreateAt().getYear();
@@ -45,33 +43,22 @@ public class ElectricBillController {
                         LocalDateTime to = from.plusMonths(1).minusNanos(1);
                         boolean exists = electricBillService.existsElectricBillForYearAndMonth(from, to);
                         if (exists) {
-                            return new ResponseEntity<>("Đã có hóa đơn tháng năm này", HttpStatus.BAD_REQUEST);
+                            return new GenericResponse("Đã có hóa đơn tháng năm này");
+                        } else {
+                            electricBillService.createElectricBill(electricBillDTO);
+                            return new GenericResponse("Tạo phiếu điện thành công");
                         }
                     }
-//                return new ResponseEntity<>("Hóa đơn không tồn tại", HttpStatus.BAD_REQUEST);
-
 
                 }
             }
-
-//        int year = electricBillDTO.getCreateAt().getYear();
-//        int month = electricBillDTO.getCreateAt().getMonthValue();
-//
-//        LocalDateTime from = LocalDateTime.of(year, month, 1, 0, 0, 0);
-//        LocalDateTime to = from.plusMonths(1).minusNanos(1);
-
-//        boolean exists = electricBillService.existsElectricBillForYearAndMonth(from, to);
-//        if (exists) {
-//            return new ResponseEntity<>("NOT FOUND", HttpStatus.BAD_REQUEST);
-//        }
-
-            ElectricBillDTO createdElectricBill = electricBillService.createElectricBill(electricBillDTO);
-            return ResponseEntity.ok(createdElectricBill);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new GenericResponse(e.getMessage());
         }
 
+        electricBillService.createElectricBill(electricBillDTO);
+        return new GenericResponse("Tại phiếu điện thành công");
     }
 
     // Read all electric bills
@@ -96,10 +83,19 @@ public class ElectricBillController {
 
     // Update an electric bill
     @PutMapping("/{id}")
-    public ResponseEntity<ElectricBillDTO> updateElectricBill(
+    public GenericResponse updateElectricBill(
             @PathVariable Long id, @RequestBody ElectricBillDTO electricBillDTO) {
-        ElectricBillDTO updatedElectricBill = electricBillService.updateElectricBill(id, electricBillDTO);
-        return ResponseEntity.ok(updatedElectricBill);
+        int result = electricBillService.updateElectricBill(id, electricBillDTO);
+        if (result == 0) {// thanh cong
+            return new GenericResponse("Cập nhật hóa đơn thành công");
+        } else if(result == 1){
+            // da thanh toan
+            return new GenericResponse("Hóa đơn đã thanh toán. Không thể cập nhật!");
+        } else if(result == 3){
+            return new GenericResponse("Số điện phải lớn hơn 0");
+        } else {
+            return new GenericResponse("Hóa đơn không tồn tại");
+        }
     }
 
     // Delete an electric bill

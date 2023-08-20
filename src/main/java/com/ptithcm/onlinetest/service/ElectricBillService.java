@@ -2,10 +2,12 @@ package com.ptithcm.onlinetest.service;
 
 import com.ptithcm.onlinetest.entity.ContractEntity;
 import com.ptithcm.onlinetest.entity.ElectricBillEntity;
+import com.ptithcm.onlinetest.entity.RoomEntity;
 import com.ptithcm.onlinetest.entity.StudentEntity;
 import com.ptithcm.onlinetest.payload.dto.ElectricBillDTO;
 import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.ElectricBillRepository;
+import com.ptithcm.onlinetest.repository.RoomRepository;
 import com.ptithcm.onlinetest.repository.StudentRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,8 @@ public class ElectricBillService {
     StudentRepository studentRepository;
     @Autowired
     ContractRepository contractRepository;
+    @Autowired
+    RoomRepository roomRepository;
 
     @Autowired
     public ElectricBillService(ElectricBillRepository electricBillRepository, ModelMapper modelMapper) {
@@ -34,9 +38,12 @@ public class ElectricBillService {
     }
 
     public ElectricBillDTO createElectricBill(ElectricBillDTO electricBillDTO) {
-        ElectricBillEntity electricBillEntity = modelMapper.map(electricBillDTO, ElectricBillEntity.class);
+        ElectricBillEntity electricBillEntity = new ElectricBillEntity();
         electricBillEntity.setCreateAt(LocalDateTime.now());
         electricBillEntity.setStatus(0);
+        electricBillEntity.setRoom(roomRepository.findById(electricBillDTO.getRoom().getId()).get());
+        electricBillEntity.setPrice(electricBillDTO.getPrice());
+        electricBillEntity.setElectricNumber(electricBillDTO.getElectricNumber());
         electricBillEntity = electricBillRepository.save(electricBillEntity);
         return modelMapper.map(electricBillEntity, ElectricBillDTO.class);
     }
@@ -72,15 +79,27 @@ public class ElectricBillService {
         }
     }
 
-    public ElectricBillDTO updateElectricBill(Long id, ElectricBillDTO electricBillDTO) {
+    public int updateElectricBill(Long id, ElectricBillDTO electricBillDTO) {
         Optional<ElectricBillEntity> electricBillEntityOptional = electricBillRepository.findById(id);
         if (electricBillEntityOptional.isPresent()) {
-            ElectricBillEntity updatedElectricBillEntity = electricBillEntityOptional.get();
-            modelMapper.map(electricBillDTO, updatedElectricBillEntity);
-            updatedElectricBillEntity = electricBillRepository.save(updatedElectricBillEntity);
-            return modelMapper.map(updatedElectricBillEntity, ElectricBillDTO.class);
+            if (electricBillEntityOptional.get().getStatus() == 1) {
+                return 1;
+            } else {
+                ElectricBillEntity updatedElectricBillEntity = electricBillEntityOptional.get();
+                Optional<RoomEntity> room = roomRepository.findById(electricBillDTO.getRoom().getId());
+                room.ifPresent(updatedElectricBillEntity::setRoom);
+                if (electricBillDTO.getPrice() > 0 && electricBillDTO.getElectricNumber() > 0) {
+                    updatedElectricBillEntity.setPrice(electricBillDTO.getPrice());
+                    updatedElectricBillEntity.setElectricNumber(electricBillDTO.getElectricNumber());
+                    electricBillRepository.save(updatedElectricBillEntity);
+                    return 0;
+                }
+                return 3;
+
+            }
+
         } else {
-            throw new RuntimeException("Electric bill not found with id: " + id);
+            return 2;
         }
     }
 
@@ -107,4 +126,5 @@ public class ElectricBillService {
             return 0;
         }
     }
+
 }

@@ -29,13 +29,14 @@ public class StudentService {
         return null;
     }
 
-    public StudentDTO createStudent(StudentDTO studentDTO) {
+    public int createStudent(StudentDTO studentDTO) {
         StudentEntity student = convertToEntity(studentDTO);
         if (!studentRepository.existsByStudentCode(studentDTO.getStudentCode())) {
             StudentEntity createdStudent = studentRepository.save(student);
-            return convertToDTO(createdStudent);
+            convertToDTO(createdStudent);
+            return 0;
         } else {
-            return null;
+            return 1;
         }
 
     }
@@ -44,6 +45,7 @@ public class StudentService {
         Optional<StudentEntity> studentOptional = studentRepository.findById(id);
             if (studentOptional.isPresent()) {
                 StudentEntity existingStudent = studentOptional.get();
+                existingStudent.setName(studentDTO.getName());
                 existingStudent.setGender(studentDTO.getGender());
                 existingStudent.setDob(studentDTO.getDob());
                 existingStudent.setIdentityCard(studentDTO.getIdentityCard());
@@ -90,12 +92,20 @@ public class StudentService {
         return null;
     }
 
-    public void deleteStudent(Long id) {
+    public int deleteStudent(Long id) {
         Optional<StudentEntity> studentOptional = studentRepository.findById(id);
-        studentOptional.ifPresent(student -> {
-            student.setDeleteYMD(LocalDate.now());
-            studentRepository.save(student);
-        });
+
+        if (studentOptional.isPresent()) {
+            if (studentOptional.get().getContracts().isEmpty()) {
+                studentOptional.get().setDeleteYMD(LocalDate.now());
+                studentRepository.save(studentOptional.get());
+                return 0;
+            } else {
+                return 2;
+            }
+        } else  {
+            return 1;
+        }
     }
     public List<StudentDTO> getAllStudents() {
         List<StudentEntity> students = studentRepository.findByDeleteYMDIsNull();

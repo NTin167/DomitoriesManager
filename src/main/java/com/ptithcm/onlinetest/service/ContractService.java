@@ -83,10 +83,20 @@ public class  ContractService {
         return contract.stream().map(this::mapToContractDTO).collect(Collectors.toList());
     }
 
-    public ContractDTO addContract(ContractDTO contractDTO) {
-        ContractEntity contractEntity = mapToContractEntity(contractDTO);
-        contractEntity = contractRepository.save(contractEntity);
-        return mapToContractDTO(contractEntity);
+    public int addContract(ContractDTO contractDTO) {
+        Optional<RoomEntity> room = roomRepository.findById(contractDTO.getRoomId());
+        if (room.isPresent()) {
+            if(room.get().getAvailableCapacity() < 1) {
+                return 1;
+            } else {
+                ContractEntity contractEntity = mapToContractEntity(contractDTO);
+                contractRepository.save(contractEntity);
+                mapToContractDTO(contractEntity);
+                return 0;
+            }
+        } else {
+            return 2;
+        }
     }
     private ContractEntity mapToContractEntity(ContractDTO contractDTO) {
         ContractEntity contractEntity = new ContractEntity();
@@ -190,38 +200,43 @@ public class  ContractService {
         contractRepository.delete(existingContract);
     }
 
-    public ContractEntity changeStatus (Long id, int status, Long staffId) {
-        ContractEntity existingContract = contractRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Contract not found with id: " + id));
-        if (status == 1) {
-            if ( existingContract != null) {
+    public int changeStatus (Long id, int status, Long staffId) {
+        Optional<ContractEntity> existingContract = contractRepository.findById(id);
+        if (status == 1 && existingContract.isPresent()) {
+
+            // Kiểm tra trạng thái có phải là chưa duyệt không
+            if (existingContract.get().getStatus() == 0) {
                 InvoiceEntity invoice = new InvoiceEntity();
                 invoice.setCreateAt(LocalDate.now());
                 invoice.setStatus(0);
-                invoice.setPrice(existingContract.getPrice());
-                Optional<ContractEntity> contractEntity1 = contractRepository.findById(existingContract.getId());
-                if(contractEntity1.isPresent()) {
-
-                    Optional<StaffEntity> staff = staffRepository.findById(staffId);
-                    if (staff.isPresent()) {
-                        contractEntity1.get().setStaff(staff.get());
-                        contractRepository.save(contractEntity1.get());
-                    }
-
-                    invoice.setContract(contractEntity1.get());
+                invoice.setPrice(existingContract.get().getPrice());
+                // Set Nhân viên duyệt cho hợp đồng
+                // set phòng cho hợp đồng
+                Optional<StaffEntity> staff = staffRepository.findById(staffId);
+                Optional<RoomEntity> room = roomRepository.findById(existingContract.get().getRoom().getId());
+                if (staff.isPresent() && room.isPresent()) {
+                    existingContract.get().setStaff(staff.get());
+                    room.get().setAvailableCapacity(room.get().getAvailableCapacity() - 1);
+                    roomRepository.save(room.get());
+                    contractRepository.save(existingContract.get());
+                    invoice.setContract(existingContract.get());
                     invoiceRepository.save(invoice);
                 }
-                else  {
-                    return null;
-                }
+                existingContract.get().setStatus(status);
+                contractRepository.save(existingContract.get());
+                return 0;
+            } else {
+                return 1; // trạng thái không thể thay đổi
             }
-
-            RoomEntity room = roomRepository.findById(existingContract.getRoom().getId()).get();
-            room.setAvailableCapacity(room.getAvailableCapacity() - 1 );
-            roomRepository.save(room);
+        } else if (status == 2 && existingContract.isPresent()) {
+            existingContract.get().setStatus(status);
+            contractRepository.save(existingContract.get());
+            return 0;
+        } else if (!existingContract.isPresent()){
+            return 2; // k tồn tại
+        } else {
+            return 3;// thay đổi trạng thái thất bại
         }
-        existingContract.setStatus(status);
-        contractRepository.save(existingContract);
-        return existingContract;
     }
+
 }

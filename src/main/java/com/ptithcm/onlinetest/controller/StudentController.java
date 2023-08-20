@@ -5,6 +5,7 @@ import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.RoomRepository;
 import com.ptithcm.onlinetest.repository.StudentRepository;
 import com.ptithcm.onlinetest.service.StudentService;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,12 +45,14 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createStudent(@RequestBody StudentDTO studentDTO) {
-        StudentDTO createdStudent = studentService.createStudent(studentDTO);
-        if (createdStudent != null) {
-            return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
+    public GenericResponse createStudent(@RequestBody StudentDTO studentDTO) {
+        int result = studentService.createStudent(studentDTO);
+        if (result == 0) {
+            return new GenericResponse("Thêm mới sinh viên thành công");
+        } else if (result == 1) {
+            return new GenericResponse("Mã sinh viên đã tồn tại");
         }
-        return ResponseEntity.ok("MA SINH VIEN DA TON TAI");
+        return new GenericResponse("Xử lý thất bại");
     }
 
     @PutMapping("/{id}")
@@ -71,8 +74,15 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
-        studentService.deleteStudent(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public GenericResponse deleteStudent(@PathVariable Long id) {
+        int result = studentService.deleteStudent(id);
+        if(result == 0) {
+            return new GenericResponse("Xóa thành công");
+        } else if (result == 1) {
+            return new GenericResponse("Sinh viên không tồn tại");
+        } else if (result == 2) {
+            return new GenericResponse("Sinh viên đã đăng ký phòng. Không thể xóa!");
+        }
+        return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý!");
     }
 }

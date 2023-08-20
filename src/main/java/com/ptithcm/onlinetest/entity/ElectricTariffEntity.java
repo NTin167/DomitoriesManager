@@ -1,5 +1,6 @@
 package com.ptithcm.onlinetest.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,5 +21,6 @@ public class ElectricTariffEntity {
     private int price;
     // Quan hệ 1 ElectricTariffEntity có nhiều ElectricBillEntity
     @OneToMany(mappedBy = "electricTariff")
+    @JsonIgnore
     private List<ElectricBillEntity> electricBills = new ArrayList<>();
 }

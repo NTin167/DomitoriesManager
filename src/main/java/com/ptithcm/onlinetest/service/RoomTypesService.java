@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,10 +18,11 @@ public class RoomTypesService {
     @Autowired
     private RoomTypesRepository roomTypesRepository;
 
-    public RoomTypesEntity createRoomType(RoomTypesDTO roomTypesDTO) {
+    public int createRoomType(RoomTypesDTO roomTypesDTO) {
         RoomTypesEntity roomTypesEntity = new RoomTypesEntity();
         mapRoomTypeDTOToEntity(roomTypesDTO, roomTypesEntity);
-        return roomTypesRepository.save(roomTypesEntity);
+        roomTypesRepository.save(roomTypesEntity);
+        return 0;
     }
 
     public List<RoomTypesDTO> getAllRoomTypes() {
@@ -62,18 +64,29 @@ public class RoomTypesService {
         return roomTypesRepository.findById(id).orElse(null);
     }
 
-    public RoomTypesDTO updateRoomType(Long id, RoomTypesDTO roomTypesDTO) {
-        RoomTypesEntity roomTypesEntity = roomTypesRepository.findById(id).orElse(null);
-        if (roomTypesEntity != null) {
-            mapRoomTypeDTOToEntity(roomTypesDTO, roomTypesEntity);
-            roomTypesRepository.save(roomTypesEntity);
-            return roomTypesDTO;
+    public int updateRoomType(Long id, RoomTypesDTO roomTypesDTO) {
+        Optional<RoomTypesEntity> roomTypesEntity = roomTypesRepository.findById(id);
+        if (roomTypesEntity.isPresent()) {
+            mapRoomTypeDTOToEntity(roomTypesDTO, roomTypesEntity.get());
+            roomTypesRepository.save(roomTypesEntity.get());
+            return 0;
         }
-        return null;
+        return 1;
     }
 
-    public void deleteRoomType(Long id) {
-        roomTypesRepository.deleteById(id);
+    public int deleteRoomType(Long id) {
+       Optional<RoomTypesEntity> roomTypesEntity =  roomTypesRepository.findById(id);
+        if (roomTypesEntity.isPresent()) {
+            if (roomTypesEntity.get().getRooms().isEmpty()) {
+                roomTypesRepository.deleteById(id);
+                return 0;
+            }
+            else {
+                return 1;
+            }
+        } else {
+            return 2;
+        }
     }
 
     // Helper method to map RoomTypesDTO to RoomTypesEntity

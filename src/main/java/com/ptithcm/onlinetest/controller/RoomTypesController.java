@@ -3,8 +3,8 @@ package com.ptithcm.onlinetest.controller;
 import com.ptithcm.onlinetest.entity.RoomTypesEntity;
 import com.ptithcm.onlinetest.payload.dto.RoomTypesDTO;
 import com.ptithcm.onlinetest.service.RoomTypesService;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +17,13 @@ public class RoomTypesController {
     private RoomTypesService roomTypesService;
 
     @PostMapping
-    public ResponseEntity<RoomTypesEntity> createRoomType(@RequestBody RoomTypesDTO roomTypesDTO) {
-        RoomTypesEntity roomTypesEntity = roomTypesService.createRoomType(roomTypesDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(roomTypesEntity);
+    public GenericResponse createRoomType(@RequestBody RoomTypesDTO roomTypesDTO) {
+        int result  = roomTypesService.createRoomType(roomTypesDTO);
+        if (result == 0 ){
+            return new GenericResponse("Tạo mới loại phòng thành công");
+        } else {
+            return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý");
+        }
     }
 
     @GetMapping
@@ -38,17 +42,28 @@ public class RoomTypesController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRoomType(@PathVariable Long id, @RequestBody RoomTypesDTO roomTypesDTO) {
-        RoomTypesDTO updatedRoomType = roomTypesService.updateRoomType(id, roomTypesDTO);
-        if (updatedRoomType != null) {
-            return ResponseEntity.ok(updatedRoomType);
+    public GenericResponse updateRoomType(@PathVariable Long id, @RequestBody RoomTypesDTO roomTypesDTO) {
+        int result = roomTypesService.updateRoomType(id, roomTypesDTO);
+        if (result == 0) {
+            return new GenericResponse("Sửa loại phòng thành công");
+        } else if (result == 1) {
+            return new GenericResponse("Loại phòng không tồn tại");
+        } else {
+            return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý");
         }
-        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRoomType(@PathVariable Long id) {
-        roomTypesService.deleteRoomType(id);
-        return ResponseEntity.noContent().build();
+    public GenericResponse deleteRoomType(@PathVariable Long id) {
+        int result = roomTypesService.deleteRoomType(id);
+        if(result == 0) {
+            return new GenericResponse("Xóa thành công");
+        } else if (result == 1 ) {
+            return new GenericResponse("Loại phòng đã có phòng. Không thể xóa");
+        } else if (result == 2) {
+            return new GenericResponse("Phòng không tồn tại");
+        } else {
+            return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý");
+        }
     }
 }

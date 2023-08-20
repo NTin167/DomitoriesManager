@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.Instant;
 
-@Entity
+//@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "quiz")
+//@Table(name = "quiz")
 public class Quiz extends DateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

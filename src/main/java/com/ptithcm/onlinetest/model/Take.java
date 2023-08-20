@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.Instant;
 
-@Entity
-@Table(name = "take")
+//@Entity
+//@Table(name = "take")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

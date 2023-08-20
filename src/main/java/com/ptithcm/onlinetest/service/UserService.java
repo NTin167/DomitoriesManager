@@ -44,8 +44,6 @@ public class UserService implements IUserService{
     public User registerNewUserAccount(SignUpRequest signUpRequest) {
         User user = new User();
         user.setUsername(signUpRequest.getUserName());
-        user.setFirstName(signUpRequest.getFirstName());
-        user.setLastName(signUpRequest.getLastName());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         user.setEmail(signUpRequest.getEmail());
         Role userRole = roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User Role not set."));
