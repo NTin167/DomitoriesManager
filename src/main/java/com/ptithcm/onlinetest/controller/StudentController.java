@@ -56,12 +56,12 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateStudent(@PathVariable Long id, @RequestBody StudentDTO studentDTO) {
-        StudentDTO updatedStudent = studentService.updateStudent(id, studentDTO);
-        if (updatedStudent != null) {
-            return new ResponseEntity<>(updatedStudent, HttpStatus.OK);
+    public GenericResponse updateStudent(@PathVariable Long id, @RequestBody StudentDTO studentDTO) {
+        int result = studentService.updateStudent(id, studentDTO);
+        if (result == 0) {
+            return new GenericResponse("Sửa sinh viên thành công");
         }
-        return ResponseEntity.ok("MA SINH VIEN DA TON TAI");
+        return new GenericResponse("Sinh viên không tồn tại");
     }
 
     @GetMapping("/getByStudentCode/{studentCode}")

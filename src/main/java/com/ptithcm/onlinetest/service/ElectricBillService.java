@@ -9,6 +9,7 @@ import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.ElectricBillRepository;
 import com.ptithcm.onlinetest.repository.RoomRepository;
 import com.ptithcm.onlinetest.repository.StudentRepository;
+ import com.ptithcm.onlinetest.util.GenericResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,9 +104,20 @@ public class ElectricBillService {
         }
     }
 
-    public void deleteElectricBill(Long id) {
-        electricBillRepository.deleteById(id);
+    public GenericResponse deleteElectricBill(Long id) {
+        Optional<ElectricBillEntity> electricBillEntityOptional = electricBillRepository.findById(id);
+        if (electricBillEntityOptional.isPresent()) {
+            if (electricBillEntityOptional.get().getStatus() == 1) {
+                return new GenericResponse("Phiếu điện đã thanh toán. Không thể xóa");
+            } else {
+                electricBillRepository.deleteById(id);
+                return new GenericResponse("Xóa phiếu điện thành công");
+            }
+        } else {
+            return new GenericResponse("Phiếu điện không tồn tại");
+        }
     }
+
 
     public boolean existsElectricBillForYearAndMonth(LocalDateTime from, LocalDateTime to) {
         return electricBillRepository.existsByCreateAtBetween(from, to);

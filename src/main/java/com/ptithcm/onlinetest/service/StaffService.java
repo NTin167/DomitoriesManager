@@ -7,9 +7,11 @@ import com.ptithcm.onlinetest.model.RoleName;
 import com.ptithcm.onlinetest.model.User;
 import com.ptithcm.onlinetest.payload.dto.StaffDTO;
 import com.ptithcm.onlinetest.payload.request.SignUpRequest;
+import com.ptithcm.onlinetest.repository.ContractRepository;
 import com.ptithcm.onlinetest.repository.RoleRepository;
 import com.ptithcm.onlinetest.repository.StaffRepository;
 import com.ptithcm.onlinetest.repository.UserRepository;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +38,8 @@ public class StaffService {
     PasswordEncoder passwordEncoder;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    ContractRepository contractRepository;
 
     public List<StaffDTO> getAllStaffs() {
         List<StaffEntity> staffEntities = staffRepository.findByDeleteYMDIsNull();
@@ -49,43 +53,50 @@ public class StaffService {
         return staffEntityOptional.map(this::convertEntityToDTO);
     }
 
-    public StaffDTO createStaff(StaffDTO staffDTO) {
+    public int createStaff(StaffDTO staffDTO) {
         StaffEntity staffEntity = convertDTOToEntity(staffDTO);
         if(!staffRepository.existsByStaffCode(staffEntity.getStaffCode())) {
             StaffEntity savedStaffEntity = staffRepository.save(staffEntity);
-            return convertEntityToDTO(savedStaffEntity);
+            convertEntityToDTO(savedStaffEntity);
+            return 0;
         } else {
-            return null;
+            return 1;
         }
     }
 
-    public StaffDTO updateStaff(Long id, StaffDTO staffDTO) {
+    public int updateStaff(Long id, StaffDTO staffDTO) {
         Optional<StaffEntity> staffOptional = staffRepository.findById(id);
-        if(!staffRepository.existsByStaffCode(staffDTO.getStaffCode())) {
-            if (staffOptional.isPresent()) {
+        if (staffOptional.isPresent()) {
                 StaffEntity staffEntity = staffOptional.get();
-                staffEntity.setStaffCode(staffDTO.getStaffCode());
                 staffEntity.setGender(staffDTO.getGender());
                 staffEntity.setDob(staffDTO.getDob());
                 staffEntity.setName(staffDTO.getName());
                 staffEntity.setPhoneNumber(staffDTO.getPhoneNumber());
                 staffEntity.setEmail(staffDTO.getEmail());
                 StaffEntity updatedStaffEntity = staffRepository.save(staffEntity);
-                return convertEntityToDTO(updatedStaffEntity);
-            }
+                convertEntityToDTO(updatedStaffEntity);
+                return 0;
         }
-        return null;
+        return 1;
     }
 
-    public boolean deleteStaff(Long id) {
+    public GenericResponse deleteStaff(Long id) {
         Optional<StaffEntity> staffEntityOptional = staffRepository.findById(id);
         if (staffEntityOptional.isPresent() && staffEntityOptional.get().getDeleteYMD() == null) {
-            StaffEntity staffEntity = staffEntityOptional.get();
-            staffEntity.setDeleteYMD(LocalDate.now());
-            staffRepository.save(staffEntity);
-            return true;
+            Optional<User> user = userRepository.findByUsername(staffEntityOptional.get().getStaffCode());
+            if (user.isPresent()) {
+                return new GenericResponse("Nhân viên đã có tài khoản. Không thể xóa");
+            } else if(!staffEntityOptional.get().getContracts().isEmpty()) {
+                return new GenericResponse("Nhân viên đã duyệt hợp đồng. Không thể xóa");
+            } else {
+                StaffEntity staffEntity = staffEntityOptional.get();
+                staffEntity.setDeleteYMD(LocalDate.now());
+                staffRepository.save(staffEntity);
+                return new GenericResponse("Xóa nhân viên thành công");
+            }
+        } else {
+            return new GenericResponse("Nhân viên không tồn tại");
         }
-        return false;
     }
 
     private StaffDTO convertEntityToDTO(StaffEntity staffEntity) {

@@ -46,29 +46,32 @@ public class StaffController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createStaff(@RequestBody StaffDTO staffDTO) {
-        StaffDTO createdStaff = staffService.createStaff(staffDTO);
-        if(createdStaff != null){
-            return new ResponseEntity<>(createdStaff, HttpStatus.CREATED);
+    public GenericResponse createStaff(@RequestBody StaffDTO staffDTO) {
+        int result = staffService.createStaff(staffDTO);
+        if(result == 0){
+            return new GenericResponse("Thêm nhân viên thành công");
+        } else {
+            return new GenericResponse("Mã nhân viên đã tồn tại. Thêm nhân viên thất bại!");
         }
-        return ResponseEntity.ok("MA NHAN VIEN DA TON TAI");
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateStaff(@PathVariable Long id, @RequestBody StaffDTO staffDTO) {
-        StaffDTO updatedStaffOptional = staffService.updateStaff(id, staffDTO);
-        if(updatedStaffOptional != null) {
-            return new ResponseEntity<>(updatedStaffOptional, HttpStatus.OK);
+    public GenericResponse updateStaff(@PathVariable Long id, @RequestBody StaffDTO staffDTO) {
+        int result = staffService.updateStaff(id, staffDTO);
+        if(result == 0) {
+            return new GenericResponse("Sửa nhân viên thàn công");
+        } else if (result == 1) {
+            return new GenericResponse("Nhân viên không tồn tại");
+        } else {
+            return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý");
         }
-        return ResponseEntity.ok("MA NHAN VIEN DA TON TAI");
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteStaff(@PathVariable Long id) {
-        boolean isDeleted = staffService.deleteStaff(id);
-        return isDeleted ? ResponseEntity.ok("XOA THANH CONG")
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public GenericResponse deleteStaff(@PathVariable Long id) {
+        return staffService.deleteStaff(id);
+
     }
 
     @PostMapping("/registration")
@@ -78,7 +81,7 @@ public class StaffController {
 //            throw new UserAlreadyExistException("There is an account with that  username" + signUpRequest.getUserName());
             return new GenericResponse("There is an account with that  student code: " + signUpRequest.getUserName());
         }
-        if(staffRepository.existsByStaffCode(signUpRequest.getUserName())) {
+        if(!staffRepository.existsByStaffCode(signUpRequest.getUserName())) {
             return new GenericResponse("Staff code is null: " + signUpRequest.getUserName());
         }
         User registered = staffService.registerNewUserAccount(signUpRequest);

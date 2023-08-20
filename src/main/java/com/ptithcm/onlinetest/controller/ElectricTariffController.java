@@ -43,19 +43,13 @@ public class ElectricTariffController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ElectricTariffEntity> updateElectricTariff(@PathVariable Long id,
+    public GenericResponse updateElectricTariff(@PathVariable Long id,
                                                                      @RequestBody ElectricTariffEntity updatedElectricTariff) {
-        ElectricTariffEntity modifiedElectricTariff = electricTariffService.updateElectricTariff(id, updatedElectricTariff);
-        if (modifiedElectricTariff != null) {
-            return ResponseEntity.ok(modifiedElectricTariff);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return electricTariffService.updateElectricTariff(id, updatedElectricTariff);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteElectricTariff(@PathVariable Long id) {
-        electricTariffService.deleteElectricTariff(id);
-        return ResponseEntity.noContent().build();
+    public GenericResponse deleteElectricTariff(@PathVariable Long id) {
+        return electricTariffService.deleteElectricTariff(id);
     }
 }

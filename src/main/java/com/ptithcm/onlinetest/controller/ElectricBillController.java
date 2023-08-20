@@ -58,7 +58,7 @@ public class ElectricBillController {
         }
 
         electricBillService.createElectricBill(electricBillDTO);
-        return new GenericResponse("Tại phiếu điện thành công");
+        return new GenericResponse("Tạo phiếu điện thành công");
     }
 
     // Read all electric bills
@@ -100,9 +100,8 @@ public class ElectricBillController {
 
     // Delete an electric bill
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteElectricBill(@PathVariable Long id) {
-        electricBillService.deleteElectricBill(id);
-        return ResponseEntity.noContent().build();
+    public GenericResponse deleteElectricBill(@PathVariable Long id) {
+        return electricBillService.deleteElectricBill(id);
     }
     @PutMapping("/payment/{id}")
     public ResponseEntity<?> payment(

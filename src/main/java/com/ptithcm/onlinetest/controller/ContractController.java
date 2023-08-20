@@ -38,14 +38,14 @@ public class ContractController {
         return contractService.getAllContracts();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getContractById(@PathVariable Long id) {
+    @GetMapping("/{studentId}")
+    public ResponseEntity<?> getContractByStudentId(@PathVariable Long studentId) {
         try {
-            List<ContractDTO> contract = contractService.getContractById(id);
+            List<ContractDTO> contract = contractService.getContractById(studentId);
             if (contract != null) {
                 return new ResponseEntity<>(contract, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("Không tồn tại hợp đồng với id = " + id ,HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Không tồn tại hợp đồng với id = " + studentId ,HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             e.printStackTrace();

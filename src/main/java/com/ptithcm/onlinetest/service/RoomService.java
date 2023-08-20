@@ -1,9 +1,11 @@
 package com.ptithcm.onlinetest.service;
 
 import com.ptithcm.onlinetest.entity.RoomEntity;
+import com.ptithcm.onlinetest.entity.RoomTypesEntity;
 import com.ptithcm.onlinetest.payload.dto.RoomDTO;
 import com.ptithcm.onlinetest.repository.RoomRepository;
 import com.ptithcm.onlinetest.repository.RoomTypesRepository;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +21,19 @@ public class RoomService {
 
     @Autowired
     private RoomTypesRepository roomTypesRepository;
-    public RoomEntity createRoom(RoomEntity room) {
-        return roomRepository.save(room);
+    public GenericResponse createRoom(RoomEntity room) {
+        if (room.getTotalCapacity() < 1) {
+            return new GenericResponse("Số giường của phòng phải lớn hơn 1");
+        } else  {
+            Optional<RoomTypesEntity> roomTypesEntity = roomTypesRepository.findById(room.getRoomType().getId());
+            if (roomTypesEntity.isPresent()) {
+                roomRepository.save(room);
+                return new GenericResponse("Thêm phòng thành công");
+            } else {
+                return new GenericResponse("Loại phòng không tồn tại");
+            }
+        }
+
     }
 
 
@@ -29,21 +42,30 @@ public class RoomService {
         return optionalRoom.orElse(null);
     }
 
-    public RoomEntity updateRoom(Long id, RoomEntity room) {
-        RoomEntity existingRoom = getRoomById(id);
-        if (existingRoom != null) {
-            // Cập nhật thông tin phòng từ room được cung cấp
-            existingRoom.setRoomName(room.getRoomName());
-            existingRoom.setStatus(room.getStatus());
-            existingRoom.setTotalCapacity(room.getTotalCapacity());
-            existingRoom.setAvailableCapacity(room.getAvailableCapacity());
-            existingRoom.setLinkImg(room.getLinkImg());
-            if(roomTypesRepository.existsById(room.getRoomType().getId())) {
-                existingRoom.setRoomType(room.getRoomType());
+    public int updateRoom(Long id, RoomEntity room) {
+        Optional<RoomEntity> existingRoom = roomRepository.findById(id);
+        if (existingRoom.isPresent()) {
+            if (existingRoom.get().getContracts().isEmpty()) {
+                // Cập nhật thông tin phòng từ room được cung cấp
+                existingRoom.get().setRoomName(room.getRoomName());
+                existingRoom.get().setStatus(room.getStatus());
+                existingRoom.get().setTotalCapacity(room.getTotalCapacity());
+                existingRoom.get().setAvailableCapacity(room.getAvailableCapacity());
+                existingRoom.get().setLinkImg(room.getLinkImg());
+                if(roomTypesRepository.existsById(room.getRoomType().getId())) {
+                    existingRoom.get().setRoomType(room.getRoomType());
+                    roomRepository.save(existingRoom.get());
+                    return 0; // thành công
+                } else  {
+                    return 3; // loại phòng k tồn tại
+                }
+
+            } else {
+                return 2; // phòng đã có hợp đồng
             }
-            return roomRepository.save(existingRoom);
+
         } else {
-            return null;
+            return 1; // phòng k tồn tại
         }
     }
 
@@ -55,13 +77,18 @@ public class RoomService {
         return null;
     }
 
-    public boolean deleteRoom(Long id) {
+    public int deleteRoom(Long id) {
         RoomEntity existingRoom = getRoomById(id);
         if (existingRoom != null) {
-            roomRepository.delete(existingRoom);
-            return true;
+            if(existingRoom.getContracts().isEmpty()) {
+                roomRepository.delete(existingRoom);
+                return 0;
+            } else {
+                return 1;
+            }
+
         } else {
-            return false;
+            return 2;
         }
     }
 

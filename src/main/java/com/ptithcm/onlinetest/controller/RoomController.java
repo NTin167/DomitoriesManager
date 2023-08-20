@@ -3,6 +3,7 @@ package com.ptithcm.onlinetest.controller;
 import com.ptithcm.onlinetest.entity.RoomEntity;
 import com.ptithcm.onlinetest.payload.dto.RoomDTO;
 import com.ptithcm.onlinetest.service.RoomService;
+import com.ptithcm.onlinetest.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,8 @@ public class RoomController {
 
     // API tạo mới một phòng
     @PostMapping
-    public ResponseEntity<RoomEntity> createRoom(@RequestBody RoomEntity room) {
-        RoomEntity createdRoom = roomService.createRoom(room);
-        return new ResponseEntity<>(createdRoom, HttpStatus.CREATED);
+    public GenericResponse createRoom(@RequestBody RoomEntity room) {
+        return roomService.createRoom(room);
     }
 
     // API lấy thông tin tất cả phòng
@@ -44,23 +44,32 @@ public class RoomController {
 
     // API cập nhật thông tin một phòng
     @PutMapping("/{id}")
-    public ResponseEntity<RoomEntity> updateRoom(@PathVariable Long id, @RequestBody RoomEntity room) {
-        RoomEntity updatedRoom = roomService.updateRoom(id, room);
-        if (updatedRoom != null) {
-            return new ResponseEntity<>(updatedRoom, HttpStatus.OK);
+    public GenericResponse updateRoom(@PathVariable Long id, @RequestBody RoomEntity room) {
+        int result = roomService.updateRoom(id, room);
+        if (result == 0) {
+            return new GenericResponse("Sửa phòng thành công");
+        } else if  (result == 1){
+            return new GenericResponse("Phòng không tồn tại");
+        } else if  (result == 2){
+            return new GenericResponse("Phòng đã có đăng ký. Sửa phòng thất bại");
+        } else if  (result == 3){
+            return new GenericResponse("Loại phòng không tồn tại");
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý");
         }
     }
 
     // API xóa một phòng
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
-        boolean deleted = roomService.deleteRoom(id);
-        if (deleted) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public GenericResponse deleteRoom(@PathVariable Long id) {
+        int result = roomService.deleteRoom(id);
+        if (result == 0) {
+            return new GenericResponse("Xóa phòng thành công");
+        } else if (result == 1 ){
+            return new GenericResponse("Phòng đã có người đăng ký. Không thể xóa!");
+        } else if (result == 2 ){
+            return new GenericResponse("Phòng không tồn tại");
         }
+        return new GenericResponse("Đã xảy ra lỗi trong quá trình xử lý");
     }
 }
