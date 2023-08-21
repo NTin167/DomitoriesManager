@@ -20,4 +20,5 @@ public interface WaterBillRepository extends JpaRepository<WaterBillEntity, Long
     List<WaterBillEntity> findAllByRoomId(Long roomId);
 
 
+
 }

@@ -56,20 +56,67 @@ public class WaterBillService {
                 .collect(Collectors.toList());
     }
 
-    public List<WaterBillDTO> getAllWaterBillsByStudentId(Long studentId) {
-        Optional<StudentEntity> student = studentRepository.findById(studentId);
-        if (student.isPresent()) {
-            for (ContractEntity contract : student.get().getContracts()) {
-                if (contract.getExpiryStatus() == 0) {
-                    List<WaterBillEntity> waterBillEntities = waterBillRepository.findAllByRoomId(contract.getRoom().getId());
-                    return waterBillEntities.stream()
-                            .map(waterBillEntity -> modelMapper.map(waterBillEntity, WaterBillDTO.class))
-                            .collect(Collectors.toList());
-                }
-            }
+//    public List<WaterBillDTO> getAllWaterBillsByStudentId(Long studentId) {
+//        Optional<StudentEntity> student = studentRepository.findById(studentId);
+//        List<ContractEntity> contractEntity =  student.get().getContracts();
+//        List<WaterBillEntity> result = new ArrayList<>();
+//        for (ContractEntity contract : contractEntity) {
+////            if(contract.getRoom() != null) {
+////                List<WaterBillEntity> billDTO = waterBillRepository.findAllByRoomId(contract.getRoom().getId());
+////                result.addAll(billDTO);
+////            }
+//            List<WaterBillEntity> waterBillEntities = waterBillRepository.findAllByRoomId(contract.getRoom().getId());
+//            return waterBillEntities.stream()
+//                    .map(waterBillEntity -> modelMapper.map(waterBillEntity, WaterBillDTO.class))
+//                    .collect(Collectors.toList());
+//        }
+//        return null;
+//    }
+public List<WaterBillDTO> getAllWaterBillsByStudentId(Long studentId) {
+    Optional<StudentEntity> student = studentRepository.findById(studentId);
+    if(student.isPresent()) {
+        for (ContractEntity contract : student.get().getContracts()) {
+            List<WaterBillEntity> waterBillEntities = waterBillRepository.findAllByRoomId(contract.getRoom().getId());
+            return waterBillEntities.stream()
+                    .map(waterBillEntity -> modelMapper.map(waterBillEntity, WaterBillDTO.class))
+                    .collect(Collectors.toList());
         }
-        return null;
     }
+
+    return null;
+}
+
+    public WaterBillDTO convertToDTO(WaterBillEntity waterBillEntity) {
+        WaterBillDTO waterBillDTO = new WaterBillDTO();
+
+        waterBillDTO.setId(waterBillEntity.getId());
+        waterBillDTO.setWaterNumber(waterBillEntity.getWaterNumber());
+        waterBillDTO.setPrice(waterBillEntity.getPrice());
+        waterBillDTO.setCreateAt(waterBillEntity.getCreateAt());
+        waterBillDTO.setStatus(waterBillEntity.getStatus());
+
+        // If you have a RoomDTO constructor that takes RoomEntity as an argument
+
+        return waterBillDTO;
+    }
+
+    public List<WaterBillDTO> convertToDTOList(List<WaterBillEntity> waterBillEntities) {
+        return waterBillEntities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+//    private WaterBillDTO convertToDTO(WaterBillEntity waterBillEntity) {
+//        WaterBillDTO waterBillDTO = new WaterBillDTO();
+//        // Map fields from WaterBillEntity to WaterBillDTO
+//        waterBillDTO.setId(waterBillEntity.getId());
+//        waterBillDTO.setWaterNumber(waterBillEntity.getWaterNumber());
+//        waterBillDTO.setPrice(waterBillEntity.getPrice());
+//        waterBillDTO.setCreateAt(waterBillEntity.getCreateAt());
+//        waterBillDTO.setStatus(waterBillEntity.getStatus());
+//        // Map other fields if needed
+//        return waterBillDTO;
+//    }
 
     public WaterBillDTO getWaterBillById(Long id) {
         Optional<WaterBillEntity> waterBillEntityOptional = waterBillRepository.findById(id);

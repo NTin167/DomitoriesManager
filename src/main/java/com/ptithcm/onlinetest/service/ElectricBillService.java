@@ -59,13 +59,11 @@ public class ElectricBillService {
         Optional<StudentEntity> student = studentRepository.findById(studentId);
         if(student.isPresent()) {
             for (ContractEntity contract : student.get().getContracts()) {
-                if(contract.getExpiryStatus() == 0) {
                     List<ElectricBillEntity> electricBillEntities = electricBillRepository.findAllByRoomId(contract.getRoom().getId());
                     return electricBillEntities.stream()
                             .map(electricBillEntity -> modelMapper.map(electricBillEntity, ElectricBillDTO.class))
                             .collect(Collectors.toList());
 
-                }
             }
         }
         return null;

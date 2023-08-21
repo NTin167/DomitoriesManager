@@ -67,14 +67,14 @@ public class WaterBillController {
         return ResponseEntity.ok(waterBills);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/student/{id}")
     public ResponseEntity<List<WaterBillDTO>> getAllWaterBillsByStudentId(@PathVariable Long id) {
         List<WaterBillDTO> waterBills = waterBillService.getAllWaterBillsByStudentId(id);
         return ResponseEntity.ok(waterBills);
     }
 
     // Read a water bill by ID
-    @GetMapping("/student/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<WaterBillDTO> getWaterBillById(@PathVariable Long id) {
         WaterBillDTO waterBill = waterBillService.getWaterBillById(id);
         return ResponseEntity.ok(waterBill);
